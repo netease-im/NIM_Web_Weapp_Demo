@@ -1,0 +1,34 @@
+.chatitem-wrapper {
+  width: 100%;
+  height: 88rpx;
+  border-bottom: 1px solid #e7e7e7;
+  display: flex;
+  flex-direction: row;
+}
+.chatitem-wrapper-highlight {
+  background-color: #e7e7e7;
+}
+
+.chatitem-icon {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 60rpx;
+  margin: 14rpx 40rpx;
+}
+
+.chatitem-title {
+  font-size: 38rpx;
+  line-height: 88rpx;
+  height: 88rpx;
+}
+
+.chatitem-arrow {
+  position: absolute;
+  right: 40rpx;
+  align-self: center; 
+  color: #d7d7d7;
+}
+
+.last-line {
+  border: none;
+}

@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "component-emoji": "/components/emoji/emoji",
+    "input-modal": "/components/inputmodal/inputmodal"
+  }
+}

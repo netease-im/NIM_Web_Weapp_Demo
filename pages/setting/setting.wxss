@@ -1,0 +1,98 @@
+.setting-wrapper {
+  width: 100%;
+  height: 100%;
+  color: #000;
+  padding-top: 32rpx;
+  box-sizing: border-box;
+}
+
+.setting-hover {
+  background-color: #f0f0f0 !important;
+}
+
+.setting-header {
+  border-bottom: 1px solid #e7e7e7;
+  border-top: 1px solid #e7e7e7;
+  height: 170rpx;
+  width: 100%;
+  padding: 40rpx;
+  margin-bottom: 32rpx;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+.setting-header-icon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 40rpx;
+  margin-right: 20rpx;
+  display: inline-block;
+}
+.setting-header-nick {
+  display:inline-block;
+  position:absolute;
+  top:60rpx;
+  left:140rpx;
+  font-size: 32rpx;
+  color: #000;
+}
+.setting-header-account {
+  display:inline-block;
+  position:absolute;
+  top:130rpx;
+  left:140rpx;
+  color: #aaa;
+  font-size: 28rpx;
+}
+.setting-header-arrow {
+  float: right;
+  margin: 28rpx 0;
+  color: #aaa;
+  width:30rpx;
+  height:30rpx;
+}
+
+.setting-detail {
+  border-bottom: 1px solid #e7e7e7;
+  border-top: 1px solid #e7e7e7;
+}
+.setting-item {
+  border-bottom:1px solid rgba(220,220,220,0.5);
+  width: 100%;
+  height: 70rpx;
+  line-height: 70rpx;
+  margin: 0 auto;
+  font-size:32rpx;
+  background-color: #fff;
+  box-sizing:border-box;
+  padding:0 20rpx;
+}
+
+.setting-item-left {
+  float: left;
+}
+.setting-item-arrow {
+  float: right;
+  margin-right:20rpx;
+  color: #aaa;
+  width: 30rpx;
+  height: 30rpx;
+  margin-top:20rpx;
+}
+.setting-item-right {
+  float: right;
+  margin-right: 20rpx;
+  color: #aaa; 
+  font-size: 28rpx; 
+}
+
+.last-item {
+ border-bottom: none;
+}
+
+.setting-logout-btn {
+  margin: 40rpx auto;
+  width: 90%;
+  background-color: #f04d64;
+  text-align: center;
+  color: #fff;
+}

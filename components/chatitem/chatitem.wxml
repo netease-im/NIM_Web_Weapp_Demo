@@ -1,0 +1,5 @@
+<view class='chatitem-wrapper' hover-class='chatitem-wrapper-highlight'>
+  <image src='{{icon}}' class='chatitem-icon'></image>
+  <text class='chatitem-title'>{{title}}</text>
+  <text class='chatitem-arrow'> > </text>
+</view>

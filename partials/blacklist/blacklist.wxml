@@ -1,0 +1,14 @@
+<view class='blacklist-wrapper'>
+  <view wx:if='{{accounts.length == 0}}' class='blacklist-no'>
+    暂无黑名单用户
+  </view>
+  <view wx:if='{{accounts.length != 0}}'>
+    <view wx:for='{{accounts}}' wx:for-item='account' wx:key="account" class='blacklist-item' hover-class='blacklist-item-hover'>
+       <view data-user='{{account}}' catchtap='switchToPersonCard' style='display:flex;width:100%;'>
+        <image src='{{account.avatar}}' class='blacklist-item-img'></image> 
+        <text class='blacklist-item-nick'>{{account.nick}}</text>
+        <text class='blacklist-item-arrow'>></text>
+       </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,34 @@
+<view>
+  <button class='contact-add-button' bindtap='addFriendHandler'>+ 添加好友</button>
+  <view class='contact-content-wrapper'>
+    <view class='contact-function-wrapper'>
+      <view class='contact-header-item' hover-class='contact-item-hover' bindtap='switchToMessageNotification'>
+        <image src='/images/notice.png' class='contact-header-item-img'></image>
+        <text class='contact-header-item-text'>消息通知</text>
+        <image src="{{iconRightArrow}}" class='contact-header-item-arrow'></image>
+      </view>
+      <view class='contact-header-item' hover-class='contact-item-hover' bindtap='switchToBlacklistHandler'>
+        <image src='/images/black.png' class='contact-header-item-img'></image>
+        <text class='contact-header-item-text'>黑名单</text>
+        <image src="{{iconRightArrow}}" class='contact-header-item-arrow'></image>
+      </view>
+      <view class='contact-header-item' hover-class='contact-item-hover' bindtap='switchToChating'>
+        <image src='{{iconMyComputer}}' class='contact-header-item-img'></image>
+        <text class='contact-header-item-text'>我的电脑</text>
+        <image src="{{iconRightArrow}}" class='contact-header-item-arrow'></image>
+      </view>
+    </view>
+    <view wx:if="{{cataHeader.length !== 0}}" class='contact-friend-wrapper'>
+      <view wx:for='{{cataHeader}}'  wx:for-item='header' wx:key="header">
+        <view class='contact-catagory-header'>{{header}}</view>
+        <view wx:for='{{friendCata[header]}}' wx:for-item='friendCard' wx:if="{{!friendCard.isBlack}}" class='contact-firend-item' hover-class='contact-item-hover' wx:key="friendCard.account" bindtap='friendItemClick' data-account='{{friendCard.account}}'>
+          <view style='border-radius: 50%;overflow:hidden;margin-top:10rpx;'>
+            <image src='{{friendCard.avatar ? friendCard.avatar : defaultUserLogo}}' class='{{friendCard.status == "离线" ? "contact-friend-item-logo gray" : "contact-friend-item-logo"}}'></image>
+          </view>
+          <text class='contact-friend-item-nick'>[{{friendCard.status}}]{{friendCard.nick}}</text>
+        </view>
+      </view>
+      
+    </view>
+  </view>
+</view>

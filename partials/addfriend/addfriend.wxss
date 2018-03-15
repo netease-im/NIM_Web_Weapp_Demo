@@ -1,0 +1,41 @@
+.addfriend-wrapper {
+  width: 100%;
+  height: 90rpx;
+  margin-top: 40rpx;
+  display: flex;
+  padding-left:20rpx;
+  box-sizing:border-box;
+}
+.addfriend-input-wrapper {
+  width: 90%;
+  height: 100%;
+  align-self: center;
+  background-color: #fff;
+  display:flex;
+}
+.addfriend-search-icon {
+  position: absolute;
+  left: 30rpx;
+  top: 65rpx;
+}
+.addfriend-clear-icon {
+  position: absolute;
+  right: 120rpx;
+  top: 68rpx;
+  z-index: 100;
+}
+.addfriend-input {
+  width: 100%;
+  color: #999;
+  box-sizing:border-box;
+  padding-left:60rpx;
+  align-self:center;
+}
+.addfriend-cancel {
+  height: 100rpx;
+  line-height: 100rpx;
+  width: 15%;
+  background-color: transparent;
+  color: #999;
+  text-align: center;
+}
