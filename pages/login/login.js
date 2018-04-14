@@ -18,18 +18,6 @@ Page({
     this.setData({
       iconLogo
     })
-    // new IMEventHandler({
-    //   token: MD5('123456'),
-    //   account: 'wujie'
-    // })
-    // new IMEventHandler({
-    //   token: MD5('123456'),
-    //   account: 'zys1'
-    // })
-    // new IMEventHandler({
-    //   token: MD5('123456'),
-    //   account: 'andyzou'
-    // })
     let self = this
     app.globalData.subscriber.on('STOP_IS_LOGIN', function() {
       self.setData({
@@ -84,9 +72,9 @@ Page({
         })
       }
     }, 15*1000)
-    new IMEventHandler({ 
-      token: MD5(user.password), 
-      account: user.account 
+    new IMEventHandler({
+      token: MD5(user.password),
+      account: user.account
     })
   },
 })
