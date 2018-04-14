@@ -10,11 +10,11 @@
 
 废话不多说直接上图：
 
-![yunxindemo-maintab](http://oq4pgjmo1.bkt.clouddn.com/smallprogramsmallprogram-yunxindemo-maintab.jpg)
+![yunxindemo-maintab](./res_github/smallprogramsmallprogram-yunxindemo-maintab.jpg)
 
 一期已经上线，欢迎扫一扫体验：
 
-![yunxindemo-qrcode](http://oq4pgjmo1.bkt.clouddn.com/smallprogramsmallprogram-yunxindemo-qrcode.jpg)
+![yunxindemo-qrcode](./res_github/smallprogramsmallprogram-yunxindemo-qrcode.jpg)
 
 ## 运行
 
@@ -90,7 +90,7 @@
 	- 展示个人数据 - 数据清洗
 	- 修改个人资料 - 调用照相、相册接口实现修改头像以及其他类型数据
 - 登录注册页
-	- ![yunxindemo-loginandregister](http://oq4pgjmo1.bkt.clouddn.com/smallprogramsmallprogram-yunxindemo-loginandregister.jpg)
+	- ![yunxindemo-loginandregister](./res_github/smallprogramsmallprogram-yunxindemo-loginandregister.jpg)
 
 二级页面：
 
@@ -99,19 +99,19 @@
 	- emoji键盘 - 自定义emoji组件(图片资源存储在网易nos上)
 	- 多种消息类型 - 支持语音、地理位置、文本、图像、视频、猜拳、emoji消息，本质就是实现了一个`富文本渲染自定义组件`，能够有效渲染不同的消息类型
 	- 支持消息的多种手势操作，支持消息的撤消、删除、转发操作，单击不同类型消息实现语音、视频消息的播放
-	- ![yunxindemo-chatting](http://oq4pgjmo1.bkt.clouddn.com/smallprogramsmallprogram-yunxindemo-chatting.jpg)
-	- ![yunxindemo-forward](http://oq4pgjmo1.bkt.clouddn.com/smallprogramsmallprogram-yunxindemo-forward.jpg)
+	- ![yunxindemo-chatting](./res_github/smallprogramsmallprogram-yunxindemo-chatting.jpg)
+	- ![yunxindemo-forward](./res_github/smallprogramsmallprogram-yunxindemo-forward.jpg)
 
 - 个人资料
 	- 分为两种，一种是陌生人个人资料、一种是好友个人资料，两种不同类型页面展示的页面组件是不一致的
 	- 入口分为如下几种：单击通讯录条目进入好友信息列表；单击聊天记录头像进入好友列表；添加好友，结果不同则展示不同的类型用户资料
 - 修改个人资料页
 	- 支持修改头像、昵称、性别、生日、手机、邮箱、签名，尽可能做到最大的复用
-	- ![yunxindemo-settingandmodify](http://oq4pgjmo1.bkt.clouddn.com/smallprogramsmallprogram-yunxindemo-settingandmodify.jpg)
+	- ![yunxindemo-settingandmodify](./res_github/smallprogramsmallprogram-yunxindemo-settingandmodify.jpg)
 - 黑名单列表
 - 消息通知界面
 	- 自定义顶部tabbar组件
-	- ![yunxindemo-notification](http://oq4pgjmo1.bkt.clouddn.com/smallprogramsmallprogram-yunxindemo-notification.jpg)
+	- ![yunxindemo-notification](./res_github/smallprogramsmallprogram-yunxindemo-notification.jpg)
 - 聊天历史记录界面
 
 初步结合框架特点以及几大开放方式特性，矛头重点集中在如何解决应用状态管理上面，经过评估后功能点较多，因此需要尽可能的减少引入外部框架，所以这边在微信小程序的基础上实现全局存储一个消息订阅器，然后在每个功能页面中订阅相应的事件，在相应的地方发布对应的事件。这样就解决了状态管理这个痛点。对于其他的一些区别个人觉得没有任何问题，对于一个有过现代前端开发经验，有使用过mvvm框架经验的开发者来说，入门小程序也就是几个小时的时间<del>本人就是</del>。既然花个几个小时能够入门小程序原生开发，为何还要去选那些坑较多，入门时间相同的框架呢。。。
