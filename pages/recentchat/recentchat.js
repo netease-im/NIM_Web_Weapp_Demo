@@ -339,7 +339,15 @@ Page({
         break
       case 'custom':
         let data = JSON.parse(msg.content)
-        let str = data['content'] || JSON.stringify(data) // 可能没有content属性
+        let seen = []
+        let str = data['content'] || JSON.stringify(data, function (key, val) {
+          if (typeof val == "object") {
+            if (seen.indexOf(val) >= 0)
+              return
+            seen.push(val)
+          }
+          return val
+        }) // 可能没有content属性
         desc = `自定义系统通知-${str}`
         break
       default: 

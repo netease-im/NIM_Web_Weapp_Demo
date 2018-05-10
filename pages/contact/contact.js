@@ -113,6 +113,14 @@ Page({
    * 检查是否加载成功数据
    */
   onShow() {
+    if (app.globalData.friends.length == 0) {
+      wx.showToast({
+        title: '你还没有任何好友',
+        duration: 1500,
+        icon: 'none'
+      })
+      return
+    }
     if (Object.keys(app.globalData.friendsCard).length == 0) {
       let accounts = app.globalData.friends.map(item => item.account)
       wx.showLoading({

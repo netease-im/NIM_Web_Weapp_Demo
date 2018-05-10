@@ -18,6 +18,12 @@ Page({
     this.setData({
       iconLogo
     })
+    // setTimeout(() => {
+    //   app.globalData.nim.disconnect || app.globalData.nim.disconnect()
+    //   setTimeout(() => {
+    //     app.globalData.nim.connect || app.globalData.nim.connect()
+    //   }, 5*1000)
+    // }, 10*1000)
     let self = this
     app.globalData.subscriber.on('STOP_IS_LOGIN', function() {
       self.setData({
@@ -72,9 +78,9 @@ Page({
         })
       }
     }, 15*1000)
-    new IMEventHandler({
-      token: MD5(user.password),
-      account: user.account
+    new IMEventHandler({ 
+      token: MD5(user.password), 
+      account: user.account 
     })
   },
 })
