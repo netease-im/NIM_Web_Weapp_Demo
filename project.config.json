@@ -8,9 +8,9 @@
 		"newFeature": true
 	},
 	"compileType": "miniprogram",
-	"libVersion": "1.9.91",
-	"appid": "touristappid",
-	"projectname": "%E6%97%A0appid",
+	"libVersion": "1.9.1",
+	"appid": "wx66d6c2faf051245a",
+	"projectname": "nimsdkdemo",
 	"condition": {
 		"search": {
 			"current": -1,
@@ -20,14 +20,22 @@
 			"current": -1,
 			"list": []
 		},
+		"plugin": {
+			"current": -1,
+			"list": []
+		},
+		"game": {
+			"list": []
+		},
 		"miniprogram": {
 			"current": -1,
 			"list": [
 				{
 					"id": -1,
-					"name": "w",
-					"pathName": "pages/login/login",
-					"query": ""
+					"name": "主界面下拉",
+					"pathName": "pages/recentchat/recentchat",
+					"query": "",
+					"scene": "1089"
 				}
 			]
 		}

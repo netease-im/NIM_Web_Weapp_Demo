@@ -4,36 +4,33 @@ var config = require('./utils/config.js')
 var subscriber = require('./utils/event.js')
 
 App({
-  /**
+  /**·
    * 初始化完成只会触发一次
    */
   onLaunch: function () {
-    // wx.getSystemInfo({
-    //   success: function (res) {
-    //     let arr = res.SDKVersion.split('.')
-    //     let num = parseInt(arr[0]) * 10 + parseInt(arr[1])
-    //     if (num < 19) {
-    //       wx.showModal({
-    //         title: '提示',
-    //         content: '当前微信版本过低，请升级到最新微信版本后重试。',
-    //       })
-    //     }
-        
-    //   }
-    // })
+    
   },
   /**
    * 启动或前台进入后台
    */
-  onShow() {
-    // wx.reLaunch({
-    //   url: '/pages/login/login',
-    // })
+  onShow({ scene }) {
+    // console.log(scene)
+    // console.log(this.globalData.nim)
+    // if (Object.keys(this.globalData.nim).length != 0) {
+    //   this.globalData.nim.connect()
+    //   wx.switchTab({
+    //     url: '/pages/recentchat/recentchat',
+    //   })
+    // }
   },
   /**
    * 前台进入后台
    */
   onHide() {
+    // console.log(this.globalData)
+    // if (this.globalData.nim) {
+    //   this.globalData.nim.disconnect()
+    // }
   },
   onError(err) {
     // console.log('小程序出错了', err)

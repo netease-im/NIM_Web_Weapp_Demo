@@ -164,18 +164,52 @@ function generateBigEmojiImageFile(content) {
 function generateRichTextNode(text) {
   let tempStr = text
   let richTextNode = []
-  let leftBracketIndex = tempStr.indexOf('['),
-    rightBracketIndex = 0
-  if (leftBracketIndex == -1) {//没有emoji
+  let leftBracketIndex = tempStr.indexOf('[')
+  let rightBracketIndex = tempStr.indexOf(']')
+  let countOfWord = 0
+  Array.from(tempStr).map(item => {
+    if(item != '[' && item != ']') {
+      countOfWord++
+    }
+  })
+  if (leftBracketIndex == -1 || rightBracketIndex == -1 || countOfWord==0) {//没有emoji
     richTextNode.push({
       type: 'text',
       text: tempStr
     })
     return richTextNode
   }
-
   while (tempStr.length != 0) {
-    if (leftBracketIndex != 0) {//最前面是文本
+    leftBracketIndex = tempStr.indexOf('[')
+    rightBracketIndex = tempStr.indexOf(']')
+    if(leftBracketIndex == 0) { // 开头是[
+      rightBracketIndex = tempStr.indexOf(']')
+      if(rightBracketIndex == -1) {
+        richTextNode.push({
+          type: 'text',
+          text: tempStr
+        })
+        tempStr = ''
+      } else {
+        let emojiName = tempStr.slice(0, rightBracketIndex + 1)
+        if (emoji[emojiName]) { // 有效emoji
+          richTextNode.push({
+            name: 'img',
+            attrs: {
+              width: '30rpx',
+              height: '30rpx',
+              src: emoji[emojiName].img
+            }
+          })
+        } else {//无效emoji
+          richTextNode.push({
+            type: 'text',
+            text: emojiName
+          })
+        }
+        tempStr = tempStr.substring(rightBracketIndex + 1, tempStr.length)
+      }
+    } else { // 开头不是[
       if (leftBracketIndex == -1) {// 最后全是文字
         richTextNode.push({
           type: 'text',
@@ -189,22 +223,7 @@ function generateRichTextNode(text) {
         })
         tempStr = tempStr.substring(leftBracketIndex, tempStr.length + 1)
       }
-    } else {// 前面是[
-      rightBracketIndex = tempStr.indexOf(']')
-      let emojiName = tempStr.slice(0, rightBracketIndex + 1)
-      if (emoji[emojiName]) {
-        richTextNode.push({
-          name: 'img',
-          attrs: {
-            width: '30rpx',
-            height: '30rpx',
-            src: emoji[emojiName].img
-          }
-        })
-      }
-      tempStr = tempStr.substring(rightBracketIndex + 1, tempStr.length)
     }
-    leftBracketIndex = tempStr.indexOf('[')
   }
   return richTextNode
 }

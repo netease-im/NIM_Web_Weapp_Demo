@@ -40,37 +40,38 @@ Page({
    * 登出
    */
   logout: function() {
-
-    app.globalData.nim.disconnect()
-    app.globalData.NIM.rmAllInstances()
-    // 清空本次数据
-    app.globalData.isLogin = false
-    app.globalData.currentChatTo = ''
-    app.globalData.friends = []
-    app.globalData.friendsCard = {}
-    app.globalData.friendsWithCard = {}
-    app.globalData.loginUser = {}
-    app.globalData.messageList = {}
-    app.globalData.nim = {}
-    app.globalData.notificationList = []
-    app.globalData.onlineList = []
-    app.globalData.blackList = {}
-    app.globalData.rawMessageList = {}
-    app.globalData.recentChatList = {}
-    app.globalData.subscriber.clear()
-
-    wx.clearStorage()
-    // wx.closeSocket({})
-
     wx.showLoading({
       title: '注销中...',
     })
-    setTimeout(() => {
-      wx.hideLoading()
-      wx.reLaunch({
-        url: '../login/login',
-      })
-    }, 1000)
+
+    // app.globalData.nim.disconnect()
+    app.globalData.nim.destroy({
+      done: function () {
+        console.log('destroy nim done !!!')
+        // 清空本次数据
+        app.globalData.isLogin = false
+        app.globalData.currentChatTo = ''
+        app.globalData.friends = []
+        app.globalData.friendsCard = {}
+        app.globalData.friendsWithCard = {}
+        app.globalData.loginUser = {}
+        app.globalData.messageList = {}
+        app.globalData.nim = {}
+        app.globalData.notificationList = []
+        app.globalData.onlineList = []
+        app.globalData.blackList = {}
+        app.globalData.rawMessageList = {}
+        app.globalData.recentChatList = {}
+        app.globalData.subscriber.clear()
+
+        wx.clearStorage()
+        // wx.closeSocket({})
+        wx.hideLoading()
+        wx.reLaunch({
+          url: '../login/login',
+        })
+      }
+    })
     
   },
   /** 

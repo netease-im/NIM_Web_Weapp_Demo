@@ -1,6 +1,6 @@
 import MD5 from '../vendors/md5.js'
-const NIM = require('../vendors/NIM_Web_NIM_v4.9.1-beta.js')
-
+const SDK = require('../vendors/NIM_Web_SDK_v5.3.0.js')
+const NIM = SDK.NIM
 import { deepClone, judgeCustomMessageType } from './util.js'
 
 var app = getApp()
