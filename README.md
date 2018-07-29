@@ -16,6 +16,10 @@
 
 ![yunxindemo-qrcode](./res_github/smallprogramsmallprogram-yunxindemo-qrcode.jpg)
 
+本项目是基于网易云信聊天室SDK实现的，更多详细介绍可以[前往](http://dev.netease.im/docs/product/IM%E5%8D%B3%E6%97%B6%E9%80%9A%E8%AE%AF/SDK%E5%BC%80%E5%8F%91%E9%9B%86%E6%88%90/Web%E5%BC%80%E5%8F%91%E9%9B%86%E6%88%90/%E6%A6%82%E8%A6%81%E4%BB%8B%E7%BB%8D)查看。
+
+另外基于网易云信chatroom SDK实现的微信小程序也已开发完成，可[前往](https://github.com/netease-im/NIM_Weapp_Chatroom_Demo)查看。
+
 ## 运行
 
 下载[微信开发者工具](https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html)，创建新项目，导入即可看到运行效果
