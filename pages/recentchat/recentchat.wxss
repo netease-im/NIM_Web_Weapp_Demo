@@ -54,6 +54,10 @@
   flex: 1;
   justify-content: space-around;
 }
+.recentchat-item-right .recentchat-item-message {
+  font-size: 28rpx;
+  color: #ccc;
+}
 .recentchat-item-top {
   align-self:flex-start;
   display:flex;

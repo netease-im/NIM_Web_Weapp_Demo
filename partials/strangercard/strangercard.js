@@ -1,137 +1,66 @@
+import { showToast, correctData } from '../../utils/util.js'
 let app = getApp()
-Page({
+let store = app.store
+let pageConfig = {
 
   /**
    * 页面的初始数据
    */
   data: {
-    rawUserData: {},//传递来的原生用户名片
     user: {}, //界面显示
-    defaultAvatar: 'http://yx-web.nos.netease.com/webdoc/h5/im/default-icon.png',
-    isBlack: false
+    isBlack: false //是否拉黑
   },
-
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
-    let paramObj = JSON.parse(decodeURIComponent(options.user))
-   
-    let isBlack = false
-      
-    // 是否黑名单
-    Object.keys(app.globalData.blackList).map(account => {
-      if (account == paramObj.account) {
-        isBlack = true
-        return
-      }
-    })
-    let result = this.correctData(paramObj) 
+    let account = options.account
+    let userCard = store.getState().friendCard[account]
     this.setData({
-      rawUserData: paramObj,
-      user: result,
-      isBlack
+      user: correctData(userCard),
+      isBlack: userCard.isBlack || false
     })
-  },
-  /**
-   * 格式化数据
-   */
-  correctData(data) {
-    let obj = {}
-    obj['account'] = data['account']
-    obj['nick'] = data['nick']
-    obj['avatar'] = data['avatar'] || this.data.defaultAvatar
-    obj['gender'] = data['gender'] || '未设置'
-    obj['birth'] = data['birth'] || '未设置'
-    obj['tel'] = data['tel'] || '未设置'
-    obj['email'] = data['email'] || '未设置'
-    obj['sign'] = data['sign'] || '未设置'
-    obj['remark'] = '未设置'//TODO：后期离线保存后读取
-    return obj
-  },
-  /**
-   * 聊天按钮
-   */
-  chatBtnHandler() {
-    // console.log('click chat')//TODO 跳转聊天界面
-  },
-  /**
-   * 删除好友按钮
-   */
-  deleteFriendBtnHandler() {
-    wx.showModal({
-      title: '确认删除此好友',
-      content: '',
-      showCancel: true,
-      cancelText: '取消',
-      confirmText: '确定',
-      success: (res) => {
-        if(res.confirm) {//用户点击确定
-          this.doDeleteFriend()
-        }
-      }
-    })
-    
   },
   /**
    * 添加好友按钮
    */
   addFriendBtnHandler() {
+    let account = this.data.user.account
     app.globalData.nim.addFriend({
-      account: this.data.user.account,
+      account,
       ps: '',
       done: (err, obj) => {
         if (err) {
-          // console.log(err)
+          console.log(err)
           return
         }
-        wx.showToast({
-          title: '添加成功',
-          duration: 1500,
-          success: () => {
-            let rawUserData = this.data.rawUserData
-            // 保存好友列表到全局数据
-            app.globalData.friends.push({
-              account: rawUserData.account,
-              createTime: rawUserData.createTime,
-              updateTime: rawUserData.updateTime,
-              valid: true
+        showToast('text', '添加成功')
+        // 获取名片信息
+        app.globalData.nim.getUser({
+          account,
+          done: function (err, user) {
+            store.dispatch({
+              type: 'FriendCard_Add_Friend',
+              payload: user
             })
-            app.globalData.friendsCard[rawUserData.account] = rawUserData
-            // 发送添加新好友信号
-            app.globalData.subscriber.emit('ADD_NEW_FRIEND', rawUserData)
+            // todo 订阅后只有在订阅账号登录状态变化后才会收到推送事件
+            // app.globalData.nim.subscribeEvent({
+            //   type: 1, // 订阅用户是登陆状态事件
+            //   accounts: new Array(account),
+            //   subscribeTime: 3600 * 24 * 30,
+            //   sync: true,
+            //   done: function(err, obj) {
+            //     if(err) {
+            //       console.log(err)
+            //       return
+            //     }
+            //     console.log(obj) // {failedAccounts: Array(0)}
+            //   }
+            // });
             wx.switchTab({
               url: '../../pages/contact/contact'
             })
           }
-        })
-      }
-    })
-  },
-  /**
-   * 发送请求，删除好友
-   */
-  doDeleteFriend() {
-    app.globalData.nim.deleteFriend({
-      account: this.data.user.account,
-      done: (err, obj) => {
-        if (err) {
-          // console.log(err)
-          return
-        }
-        let rawUserData = this.data.rawUserData
-        // 从全局列表中删除已存在好友
-        app.globalData.friends.map((item, index) => {
-          if (rawUserData.account == item.account) {
-            app.globalData.friends.splice(index, 1)// 删除
-            return
-          }
-        })
-        delete app.globalData.friendsCard[rawUserData.account]//TODO：可能存在bug，friendsCard数据还未同步过来时，为空
-        // 发送添加新好友信号
-        app.globalData.subscriber.emit('DELETE_OLD_FRIEND', rawUserData) 
-        wx.switchTab({
-          url: '../../pages/contact/contact',
         })
       }
     })
@@ -155,24 +84,19 @@ Page({
               isAdd: true,//true表示加入黑名单,
               done: (err, obj) => {
                 if (err) {
-                  // console.log(err)
+                  console.log(err)
                   return
                 }
-                // 插入全局黑名单列表
-                app.globalData.blackList[account] = {
-                  account,
-                  createTime: app.globalData.friendsCard[account].createTime,
-                  updateTime: app.globalData.friendsCard[account].updateTime,
-                  addTime: new Date().getTime() // 用这个排序
-                }
-
-                wx.showToast({
-                  title: '拉入黑名单成功',
-                  duration: 1500,
-                  icon: 'none'
+                // 更新数据
+                store.dispatch({
+                  type: 'Blacklist_Update_MarkInBlacklist',
+                  payload: {
+                    account,
+                    isBlack: true,
+                    addTime: new Date().getTime() // 用这个排序
+                  }
                 })
-                // 向外部发送消息
-                app.globalData.subscriber.emit('MARK_FRIEND_CONTACT', { account })
+                showToast('text', '拉入黑名单成功')
               }
             })
           }
@@ -185,23 +109,21 @@ Page({
         isAdd: false,//true表示加入黑名单,
         done: (err, obj) => {
           if (err) {
-            // console.log(err)
+            console.log(err)
             return
           }
-          // 从全局黑名单列表删除
-          delete app.globalData.blackList[account]
-          wx.showToast({
-            title: '移除黑名单成功',
-            duration: 1500,
-            icon: 'none'
+          store.dispatch({
+            type: 'Blacklist_Update_MarkInBlacklist',
+            payload: {
+              account,
+              isBlack: false,
+              addTime: new Date().getTime()
+            }
           })
-          // 向外部发送消息
-          app.globalData.subscriber.emit('UNMARK_FRIEND_CONTACT', { account })
+          showToast('text', '移除黑名单成功')
         }
       })
     }
   }
-
-  
-
-})
+}
+Page(pageConfig)

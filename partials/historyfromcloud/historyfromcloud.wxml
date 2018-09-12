@@ -3,8 +3,6 @@
   <view wx:if="{{isVideoFullScreen}}" style='position:fixed;top:0;bottom:0;right:0;left:0;z-index:999;background-color:#000;'>
     <video id="videoEle" src="{{videoSrc}}" bindended="videoEnded" show-fullscreen-btn="{false}" controls style='width:100%;height:100%;'></video>
   </view>
-  <!-- 消息加载完成标识 -->
-  <!-- <view wx:if="historyAllDone" class='history-load-done'>别拉了，历史记录已经加载完了！</view> -->
   <!-- 消息记录 -->
    <view class='record-wrapper' id="historyWrapper"> 
     <view wx:for="{{messageArr}}" wx:for-item="message" wx:key="{{message.time}}">

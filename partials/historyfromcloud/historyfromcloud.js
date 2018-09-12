@@ -1,18 +1,17 @@
-import { calcTimeHeader, generateFingerGuessImageFile, generateBigEmojiImageFile, generateRichTextNode, generateImageNode } from '../../utils/util.js'
+import { showToast, calcTimeHeader, generateFingerGuessImageFile, generateBigEmojiImageFile, generateRichTextNode, generateImageNode } from '../../utils/util.js'
 import { voice } from '../../utils/imageBase64.js'
-var app = getApp()
-Page({
+import { connect } from '../../redux/index.js'
 
-  /**
-   * 页面的初始数据
-   */
+let app = getApp()
+let store = app.store
+
+let pageConfig = {
   data: {
     chatTo: '',
     voiceIcon: '',// 小喇叭图标base64
     messageArr: [], //[{scene,from,fromNick,flow,to,text,type,time,content,file,geo,displayTimeHeader]}]
-    lastMsgId: '', // 上次查询的最后一条消息的idServer,第一次不用,
-    endTime: '', // 存储上次加载的最后一条消息的时间，后续加载更多使用
-    limit: 100, // 每次查询结果
+    endTime: new Date().getTime(), // 存储上次加载的最后一条消息的时间，后续加载更多使用
+    limit: 20, // 每次查询结果
     historyAllDone: false, //是否已经加载完所有历史
     isVideoFullScreen: false
   },
@@ -22,13 +21,13 @@ Page({
    */
   onLoad: function (options) {
     // console.log(options)
-    this.getHistoryMsgs(options.account)
     this.setData({
       chatTo: options.account,
       voiceIcon: voice,
       chatToLogo: decodeURIComponent(options.chatToLogo),
-      userLogo: app.globalData.loginUser['avatar'] || 'http://yx-web.nos.netease.com/webdoc/h5/im/default-icon.png'
+      userLogo: this.data.userInfo.avatar || app.globalData.PAGE_CONFIG.defaultUserLogo
     })
+    this.getHistoryMsgs(true)
   },
   /**
    * 下拉刷新钩子
@@ -36,137 +35,66 @@ Page({
   onPullDownRefresh() {
     if (this.data.historyAllDone) {
       wx.stopPullDownRefresh()
+      showToast('text', '别扯了，到底了！')
     } else {
-      app.globalData.nim.getHistoryMsgs({
-        scene: 'p2p',
-        to: this.data.chatTo,
-        limit: this.data.limit,
-        asc: true, // 时间正序排序
-        lastMsgId: this.data.lastMsgId,
-        endTime: this.data.endTime,
-        done: this.getHistoryMsgsDone
-      });
+      this.getHistoryMsgs(false)
     }
   },
   /**
    * 获取云端历史记录
    */
-  getHistoryMsgs(account) {
+  getHistoryMsgs(isScrollToBottom) {
     wx.showLoading({
       title: '加载历史消息中',
     })
     app.globalData.nim.getHistoryMsgs({
       scene: 'p2p',
-      to: account,
+      to: this.data.chatTo,
       limit: this.data.limit,
       asc: true,// 时间正序排序
-      done: this.getHistoryMsgsDone
+      endTime: this.data.endTime,
+      done: (err, obj) => {
+        this.getHistoryMsgsDone(err, obj)
+        if(isScrollToBottom === true) {
+          setTimeout(() => {
+            this.scrollToBottom()
+          }, 200)
+        }
+      }
     })
   },
   /**
    * 历史消息获取成功回调
    */
   getHistoryMsgsDone(err, obj) {
-    wx.hideLoading()
-    if(err) {
+    if (err) {
       console.log(err)
-      wx.showToast({
-        title: '请检查网络后重试',
-        duration: 1500,
-        icon: 'none'
-      })
+      showToast('text', '请检查网络后重试')
       return
     }
-    this.formatMsgs(obj.msgs)
-  },
-  /**
-   * 格式化收到的消息，以便显示
-   */
-  formatMsgs(msgs) {
-    let self = this
-    let resultArr = [] // 存储结果数组
-    let messageArr = [...self.data.messageArr] // 已经渲染完成数组
-    // console.log(msgs)
-    msgs.map((message,index) => {
-      // 类型 
-      let type = ''
-      if (message.type === 'custom' && JSON.parse(message['content'])['type'] === 1) {
-        type = '猜拳'
-      } else if (message.type === 'custom' && JSON.parse(message['content'])['type'] === 3) {
-        type = '贴图表情'
-      } else {
-        type = message.type
-      }
-      // 时间头部
-      let displayTimeHeader = ''
-      if(index === 0) {
-        displayTimeHeader = calcTimeHeader(message.time)
-      } else {
-        let delta = message.time - msgs[index - 1].time
-        if(delta > 2*60*1000) { // 超过两分钟，才计算
-          displayTimeHeader = calcTimeHeader(message.time)
-        }
-      }
-      // 富文本节点信息
-      let nodes = []
-      if(type === 'text') {
-        nodes = generateRichTextNode(message.text)
-      } else if(type === 'tip') {
-        nodes = [{
-          type: 'text',
-          text: message.tip
-        }]
-      } else if(type === 'image'){
-        nodes = generateImageNode(message.file)
-      } else if (type === '贴图表情') {
-        nodes = generateImageNode(generateBigEmojiImageFile(JSON.parse(message.content)))
-      } else if(type === '猜拳') {
-        nodes = generateImageNode(generateFingerGuessImageFile(JSON.parse(message.content).data.value))
-      }
-      messageArr.push({
-        type,
-        text: message.text,
-        time: message.time,
-        sendOrReceive: message.flow === 'in' ? 'receive' : 'send',
-        displayTimeHeader,
-        geo: message.geo || null,
-        file: message.file || null,
-        nodes 
+    // 所有历史消息加载完毕
+    if(obj.msgs.length < this.data.limit) {
+      this.setData({
+        historyAllDone: true
       })
+    }
+    this.setData({
+      endTime: obj.msgs[0].time
     })
-    // console.log(messageArr)
-    // if(msgs.length < self.data.limit) { // 返回的数量小于预期加载数量，加载结束
-    //   self.setData({
-    //     historyAllDone: true
-    //   })
-    // }
-    self.setData({
-      messageArr,
-      // lastMsgId: messageArr[0].idServer,
-      // endTime: messageArr[0].time
+    this.setData({
+      messageArr: [...this.convertRawMessageListToRenderMessageArr(obj.msgs), ...this.data.messageArr]
     })
-    // if (self.data.messageArr.length <= self.data.limit) { // 第一次加载，滚动至底部
-    //   setTimeout(() => {
-    //     self.scrollToBottom()
-    //   }, 200)
-    // } else { // 加载更多，无须滚动
-
-    // }
-    setTimeout(() => {
-      self.scrollToBottom()
-    }, 200)
+    // 隐藏loading动画
+    wx.hideLoading()
   },
   /**
    * 滚动页面到底部
    */
   scrollToBottom() {
-    let self = this
-    wx.createSelectorQuery().select('#historyWrapper').boundingClientRect(function (rect) {
-      wx.pageScrollTo({
-        scrollTop: rect.height + 100,
-        duration: 100
-      })
-    }).exec()
+    wx.pageScrollTo({
+      scrollTop: 99999999,
+      duration: 100
+    })
   },
   /**
    * 查看全屏地图
@@ -191,18 +119,10 @@ Page({
     }
     audioContext.play()
     audioContext.onPlay(() => {
-      wx.showToast({
-        title: '播放中',
-        icon: 'none',
-        duration: audio.dur
-      })
+      showToast('text', '播放中', { duration: audio.dur})
     })
     audioContext.onError((res) => {
-      wx.showToast({
-        title: res.errCode,
-        icon: 'none',
-        duration: 1500
-      })
+      showToast('text', res.errCode)
     })
   },
   /**
@@ -230,4 +150,138 @@ Page({
       videoSrc: ''
     })
   },
-})
+  /**
+   * 距离上一条消息是否超过两分钟
+   */
+  judgeOverTwoMinute(time, messageArr) {
+    let displayTimeHeader = ''
+    let lastMessage = messageArr[messageArr.length - 1]
+    if (lastMessage) {//拥有上一条消息
+      let delta = time - lastMessage.time
+      if (delta > 2 * 60 * 1000) {//两分钟以上
+        displayTimeHeader = calcTimeHeader(time)
+      }
+    } else {//没有上一条消息
+      displayTimeHeader = calcTimeHeader(time)
+    }
+    return displayTimeHeader
+  },
+  /**
+   * 原始消息列表转化为适用于渲染的消息列表
+   * [{flow,from,fromNick,idServer,scene,sessionId,text,target,to,time...}]
+   * => 
+   * [{text, time, sendOrReceive: 'send', displayTimeHeader, nodes: []},{type: 'geo',geo: {lat,lng,title}}]
+   */
+  convertRawMessageListToRenderMessageArr(rawMsgList) {
+    let messageArr = []
+    rawMsgList.map(rawMsg => {
+      let msgType = ''
+      if (rawMsg.type === 'custom' && JSON.parse(rawMsg['content'])['type'] === 1) {
+        msgType = '猜拳'
+      } else if (rawMsg.type === 'custom' && JSON.parse(rawMsg['content'])['type'] === 3) {
+        msgType = '贴图表情'
+      } else {
+        msgType = rawMsg.type
+      }
+      let displayTimeHeader = this.judgeOverTwoMinute(rawMsg.time, messageArr)
+      let sendOrReceive = rawMsg.flow === 'in' ? 'receive' : 'send'
+      let specifiedObject = {}
+      switch (msgType) {
+        case 'text': {
+          specifiedObject = {
+            nodes: generateRichTextNode(rawMsg.text)
+          }
+          break
+        }
+        case 'image': {
+          specifiedObject = {
+            nodes: generateImageNode(rawMsg.file)
+          }
+          break
+        }
+        case 'geo': {
+          specifiedObject = {
+            geo: rawMsg.geo
+          }
+          break
+        }
+        case 'audio': {
+          specifiedObject = {
+            audio: rawMsg.file
+          }
+          break
+        }
+        case 'video': {
+          specifiedObject = {
+            video: rawMsg.file
+          }
+          break
+        }
+        case '猜拳': {
+          let value = JSON.parse(rawMsg['content']).data.value
+          specifiedObject = {
+            nodes: generateImageNode(generateFingerGuessImageFile(value))
+          }
+          break
+        }
+        case '贴图表情': {
+          let content = JSON.parse(rawMsg['content'])
+          specifiedObject = {
+            nodes: generateImageNode(generateBigEmojiImageFile(content))
+          }
+          break
+        }
+        case 'tip': {
+          specifiedObject = {
+            text: rawMsg.tip,
+            nodes: [{
+              type: 'text',
+              text: rawMsg.tip
+            }]
+          }
+          break
+        }
+        case '白板消息':
+        case '阅后即焚': {
+          specifiedObject = {
+            nodes: [{
+              type: 'text',
+              text: `[${msgType}],请到手机或电脑客户端查看`
+            }]
+          }
+          break
+        }
+        case 'file':
+        case 'robot': {
+          let text = msgType === 'file' ? '文件消息' : '机器人消息'
+          specifiedObject = {
+            nodes: [{
+              type: 'text',
+              text: `[${text}],请到手机或电脑客户端查看`
+            }]
+          }
+          break
+        }
+        default: {
+          break
+        }
+      }
+      messageArr.push(Object.assign({}, {
+        type: msgType,
+        text: rawMsg.text || '',
+        time: rawMsg.time,
+        sendOrReceive,
+        displayTimeHeader
+      }, specifiedObject))
+    })
+    return messageArr
+  },
+}
+let mapStateToData = (state) => {
+  return {
+    userInfo: state.userInfo
+  }
+}
+let mapDispatchToPage = dispatch => {}
+let connectedPageConfig = connect(mapStateToData, mapDispatchToPage)(pageConfig)
+Page(connectedPageConfig)

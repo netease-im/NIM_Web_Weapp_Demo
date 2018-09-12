@@ -21,7 +21,6 @@
 
     <button form-type='submit' loading='{{isRegister}}' disabled='{{!account || !nickname || !password}}' class='register-submit-btn'>注册</button>
   </form>
-  <!-- <view wx:if='{{showHint}}' class='popHint'>{{hintMessage}}</view> -->
   <text bindtap='registerLoginTap' class='register-to-login'>已有帐号？直接登录</text>
 </view>
 </view>

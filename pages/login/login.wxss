@@ -2,7 +2,7 @@
   width: 100%;
   position: absolute;
   top: 50%;
-  margin-top: -440rpx;
+  margin-top: -400rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -12,16 +12,11 @@
   width: 100%;
 }
 .login-title {
-  display:flex;
-  flex-direction:column;
-}
-.login-title-image {
-  width:140rpx;
-  height:140rpx;
-  margin-bottom:10rpx;
-}
-.login-title-text {
-  color: #aaa;
+  font-size: 60rpx;
+  display: inline-block;
+  text-shadow: 1px 1px 2px #e7e7e7;
+  height: 70rpx;
+  margin-bottom: 40rpx;
 }
 
 .login-item {
@@ -53,11 +48,15 @@
 }
 
 .login-submit-btn {
-  color: #fff; 
+  /* width: 90%; */
+  /* height: 90rpx; */
+  /* color: #fff; */
   vertical-align: middle;
+  /* margin: 40rpx auto 20rpx; */
   margin: 30rpx;
-   background-color: rgb(0, 152, 248);  
+  /* background-color: #1A9BFC; */
 }
+
 
 .login-to-register {
   display: flex;
