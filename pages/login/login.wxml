@@ -1,11 +1,7 @@
 <view class='background-wrapper'>
   <view class='login-wrapper'>
-    <view class='login-title'>
-      <image src="{{iconLogo}}" class='login-title-image'></image>
-      <text class='login-title-text'>云信Demo</text>
-    </view>
-
-    <form bindsubmit='loginSubmit'>
+    <view class='login-title'>Demo云信</view>
+    <form bindsubmit='doLogin'>
       <view class='login-item'>
         <text class='login-item-text'>账号</text>
         <input bindinput='inputHandler' data-type='account' class='login-item-input' placeholder='请输入' type='text' confirm-type='next'></input>
@@ -16,7 +12,6 @@
       </view>
       <button form-type='submit' loading='{{isLogin}}' disabled='{{!account || !password}}' class='login-submit-btn'>登录</button>
     </form>
-
     <text bindtap='registerTap' class='login-to-register'>注册</text>
   </view>
 </view>

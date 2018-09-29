@@ -70,16 +70,17 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-   max-width: 80%; 
+  max-width: 80%; 
+  font-size: 28rpx;
 }
-.notification-item .notification-item-right .notification-item-top {
-  font-size: 32rpx;
+/* .notification-item .notification-item-right .notification-item-top {
+  font-size: 28rpx;
   color: #000;
 }
 .notification-item .notification-item-right .notification-item-bottom {
-  font-size: 30rpx;
+  font-size: 28rpx;
   color: #ccc;
-}
+} */
 .clearNotificationBtn {
   position: absolute;
   width: 90%;

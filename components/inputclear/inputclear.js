@@ -50,9 +50,6 @@ Component({
      */
     confirmHandler() {
       this.triggerEvent('inputClearFinish', { data: this.data.inputVal }, {})
-      // this.setData({
-      //   inputVal: ''
-      // })
     }
   }
 })

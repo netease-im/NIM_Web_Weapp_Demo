@@ -107,7 +107,6 @@
 .more-subcontent .more-subcontent-item .image {
   width:100rpx;
   height:100rpx;
-  /* background-color:red; */
   border-radius:20rpx;
   margin-bottom: 10rpx;
 }

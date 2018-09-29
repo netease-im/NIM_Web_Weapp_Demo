@@ -82,7 +82,7 @@
           <text class='text'>拍摄</text>
         </view>
         <!-- <view class='more-subcontent-item'><view class='image'></view><text class='text'>文件</text></view> -->
-        <view class='more-subcontent-item' catchtap='sendTipMessage'>
+        <view class='more-subcontent-item' catchtap='showTipMessagePanel'>
           <image src="{{iconBase64Map.iconTip}}" class='image'></image>
           <text class='text'>Tip</text>
         </view>

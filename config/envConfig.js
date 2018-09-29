@@ -1,7 +1,7 @@
 // 配置
-var envir = 'online',
-  CONFIG = {},
-  configMap = {
+let envir = 'online'
+let ENVIRONMENT_CONFIG = {}
+let configMap = {
     test: {
       appkey: 'fe416640c8e8a72734219e1847ad2547',
       url: 'https://apptest.netease.im'
@@ -16,8 +16,8 @@ var envir = 'online',
       url: 'https://app.netease.im'
     }
   };
-CONFIG = configMap[envir];
+ENVIRONMENT_CONFIG = configMap[envir];
 // 是否开启订阅服务
-CONFIG.openSubscription = true
+ENVIRONMENT_CONFIG.openSubscription = true
 
-module.exports = CONFIG
+module.exports = ENVIRONMENT_CONFIG

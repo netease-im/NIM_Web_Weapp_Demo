@@ -1,4 +1,5 @@
-var emojimap = require('./emojimap.js').default
+import PAGE_CONFIG from '../config/pageConfig.js'
+import emojimap from './emojimap.js'
 var emoji = emojimap.emojiList.emoji
 
 function formatDate(date) {
@@ -13,7 +14,7 @@ function formatDate(date) {
   return [year, month, day].map(formatNumber).join('/') + ' ' + [hour, minute, second].map(formatNumber).join(':')
 }
 
-function formatTime (date) {
+function formatTime(date) {
   var hour = date.getHours()
   var minute = date.getMinutes()
   var second = date.getSeconds()
@@ -26,30 +27,23 @@ function formatNumber(n) {
   return n[1] ? n : '0' + n
 }
 
-const KEY_LOGS = 'logs'
-
-function clearLog () {
-  wx.removeStorageSync(KEY_LOGS)
-}
-
-function pushLog (msg) {
-  var logs = wx.getStorageSync(KEY_LOGS) || []
-  logs.unshift({
-    date: Date.now(),
-    msg
-  })
-  wx.setStorageSync(KEY_LOGS, logs)
-}
-
 /**
  * 验证数据长度有效性
  */
 function checkStringLength(str, max, min) {
-  if (str && str.toString().length <= max && str.toString().length >= min) {
+  if (str && str.toString().length <= max && stfr.toString().length >= min) {
     return true
   } else {
     return false
   }
+}
+/**
+ * 首字母大写
+ */
+function firstLetterUpper(str) {
+  let temp = ''.concat(String.fromCodePoint(str[0].toLowerCase().charCodeAt() - 32), str.substr(1))
+  console.log(temp)
+  return temp
 }
 
 /**
@@ -60,24 +54,18 @@ function checkStringLength(str, max, min) {
  *       string-number-hanzi : 仅限中文、字母、汉字
  */
 function validStringType(str, type) {
-  let result = null
-  switch(type) {
+  switch (type) {
     case 'string-number':
-      result = /^[A-Za-z0-9]+$/.test(str)
-      break
+      return /^[A-Za-z0-9]+$/.test(str)
     case 'string-number-hanzi':
-      result = /^[\u4E00-\u9FA5A-Za-z0-9]+$/.test(str)
-      break
-    case 'email': 
-      result = /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(str)
-      break
+      return /^[\u4E00-\u9FA5A-Za-z0-9]+$/.test(str)
+    case 'email':
+      return /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(str)
     case 'phone':
-      result = /^(13[0-9]|14[5|7]|15[0|1|2|3|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$/.test(str)
-      break
-    default: 
+      return /^(13[0-9]|14[5|7]|15[0|1|2|3|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$/.test(str)
+    default:
       break
   }
-  return result
 }
 /**
  * 字符串数组排序：包含中文字符
@@ -111,26 +99,280 @@ function calcTimeHeader(time) {
   }
   // 计算是否是昨天
   let yesterday = new Date(currentDate - 24 * 3600 * 1000)
-  if (year == yesterday.getUTCFullYear() && month == yesterday.getUTCMonth() && day == yesterday.getDate()) {//昨天
+  if (year == yesterday.getUTCFullYear() && month == yesterday.getUTCMonth && day == yesterday.getDate()) {//昨天
     return `昨天 ${hour}:${minute < 10 ? '0' + minute : minute}`
   } else {
     return `${year}-${month + 1}-${day} ${hour}:${minute < 10 ? '0' + minute : minute}`
   }
 }
-/**
- * 播放网络音频
+/** 
+ * post 方法，接受params参数对象
  */
-function playNetAudio({ dur, mp3Url}) {
-  const audioContext = wx.createInnerAudioContext()
-  audioContext.src = mp3Url
-  audioContext.play()
-  audioContext.onPlay((res) => {
-    // console.log(res)
+function post(params) {
+  let url = params.url,
+    header = params.header || {},
+    data = params.data;
+
+  return new Promise((resolve, reject) => {
+    wx.request({
+      url: url,
+      data: data,
+      header: header,
+      method: 'POST',
+      success: function (data, statusCode, header) {
+        resolve({ data, statusCode, header })
+      },
+      fail: function () {
+        reject('请求失败，请重试！')
+      }
+    })
   })
 }
 /**
-   * 输出猜拳图片对象，用于生成富文本图片节点
+ * 封装toast
+ */
+function showToast (type, text, obj) {
+  let param = { duration: (obj && obj.duration) || 1500, mask: (obj && obj.isMask) || false }
+  switch(type) {
+    case 'text': {
+      param['title'] = text || ''
+      param['icon'] = 'none'
+      break
+    }
+    case 'loading': {
+      param['title'] = text || ''
+      param['icon'] = 'loading'
+      break
+    } 
+    case 'success': {
+      param['title'] = text || ''
+      param['icon'] = 'success'
+      break
+    }
+    case 'error': {
+      param['title'] = text || ''
+      param['image'] = '/images/emoji.png'
+      break
+    }
+    default: {
+      break
+    }
+  }
+  wx.showToast(param)
+}
+
+/**
+   * 深度克隆friendCata
    */
+function deepClone(data) {
+  let des = {}
+  for (let cataKey in data) {
+    let desArr = data[cataKey]
+
+    des[cataKey] = []
+    desArr.map(item => {
+      let temp = {}
+      for (let key in item) {
+        temp[key] = item[key]
+      }
+      des[cataKey].push(temp)
+    })
+  }
+  return des
+}
+/**
+ * 计算在线 状态
+ * [account,clientType,custom:{1:{net_state:1,online_state:0}},idClient,idServer,serverConfig,time,type,value]
+ */
+function updateMultiPortStatus(data) {
+  if (data.account) {
+    let account = data.account
+    let multiPortStatus = ''
+    function getMultiPortStatus(customType, custom) {
+      // 服务器下推多端事件标记的特定序号对应值
+      var netState = {
+        0: '',
+        1: 'Wifi',
+        2: 'WWAN',
+        3: '2G',
+        4: '3G',
+        5: '4G'
+      }
+      var onlineState = {
+        0: '在线',
+        1: '忙碌',
+        2: '离开'
+      }
+
+      var custom = custom || {}
+      if (customType !== 0) {
+        // 有serverConfig.online属性，已被赋值端名称
+        custom = custom[customType]
+      } else if (custom[4]) {
+        custom = custom[4]
+        multiPortStatus = '电脑'
+      } else if (custom[2]) {
+        custom = custom[2]
+        multiPortStatus = 'iOS'
+      } else if (custom[1]) {
+        custom = custom[1]
+        multiPortStatus = 'Android'
+      } else if (custom[16]) {
+        custom = custom[16]
+        multiPortStatus = 'Web'
+      } else if (custom[64]) {
+        custom = custom[64]
+        multiPortStatus = 'Mac'
+      }
+      if (custom) {
+        custom = JSON.parse(custom)
+        if (typeof custom['net_state'] === 'number') {
+          var tempNetState = netState[custom['net_state']]
+          if (tempNetState) {
+            multiPortStatus += ('[' + tempNetState + ']')
+          }
+        }
+        if (typeof custom['online_state'] === 'number') {
+          multiPortStatus += onlineState[custom['online_state']]
+        } else {
+          multiPortStatus += '在线'
+        }
+      }
+      return multiPortStatus
+    }
+    // demo自定义多端登录同步事件
+    if (+data.type === 1) {
+      if (+data.value === 1 || +data.value === 2 || +data.value === 3 || +data.value === 10001) {
+        var serverConfig = JSON.parse(data.serverConfig)
+        var customType = 0
+        multiPortStatus = ''
+        // 优先判断serverConfig字段
+        if (serverConfig.online) {
+          if (serverConfig.online.indexOf(4) >= 0) {
+            multiPortStatus = '电脑'
+            customType = 4
+          } else if (serverConfig.online.indexOf(2) >= 0) {
+            multiPortStatus = 'iOS'
+            customType = 2
+          } else if (serverConfig.online.indexOf(1) >= 0) {
+            multiPortStatus = 'Android'
+            customType = 1
+          } else if (serverConfig.online.indexOf(16) >= 0) {
+            multiPortStatus = 'Web'
+            customType = 16
+          } else if (serverConfig.online.indexOf(64) >= 0) {
+            multiPortStatus = 'Mac'
+            customType = 64
+          }
+        }
+        if (data.custom && (Object.keys(data.custom).length > 0)) {
+          var portStatus = getMultiPortStatus(customType, data.custom)
+          // 如果serverConfig里有属性而custom里没有对应属性值
+          if ((multiPortStatus !== '') && (portStatus === '')) {
+            multiPortStatus += '在线'
+          } else {
+            multiPortStatus = portStatus
+            // multiPortStatus += portStatus
+          }
+        } else if (customType !== 0) {
+          multiPortStatus += '在线'
+        } else {
+          multiPortStatus = '离线'
+        }
+        return multiPortStatus
+      }
+    }
+  }
+  return '离线'
+}
+/** 
+ * 校验并补全字段
+ */
+function correctData (obj) {
+  let temp = {}
+  temp['account'] = obj['account']
+  temp['nick'] = obj['nick']
+  temp['avatar'] = obj['avatar'] || PAGE_CONFIG.defaultUserLogo
+  temp['gender'] = obj['gender'] || '未设置'
+  temp['birth'] = obj['birth'] || '未设置'
+  temp['tel'] = obj['tel'] || '未设置'
+  temp['email'] = obj['email'] || '未设置'
+  temp['sign'] = obj['sign'] || '未设置'
+  obj['remark'] = '未设置'
+  return temp
+}
+/**
+ * 生成富文本节点
+ */
+function generateRichTextNode(text) {
+  let tempStr = text
+  let richTextNode = []
+  let leftBracketIndex = tempStr.indexOf('[')
+  let rightBracketIndex = tempStr.indexOf(']')
+  let countOfWord = 0
+  Array.from(tempStr).map(item => {
+    if (item != '[' && item != ']') {
+      countOfWord++
+    }
+  })
+  if (leftBracketIndex == -1 || rightBracketIndex == -1 || countOfWord == 0) {//没有emoji
+    richTextNode.push({
+      type: 'text',
+      text: tempStr
+    })
+    return richTextNode
+  }
+  while (tempStr.length != 0) {
+    leftBracketIndex = tempStr.indexOf('[')
+    rightBracketIndex = tempStr.indexOf(']')
+    if (leftBracketIndex == 0) { // 开头是[
+      rightBracketIndex = tempStr.indexOf(']')
+      if (rightBracketIndex == -1) {
+        richTextNode.push({
+          type: 'text',
+          text: tempStr
+        })
+        tempStr = ''
+      } else {
+        let emojiName = tempStr.slice(0, rightBracketIndex + 1)
+        if (emoji[emojiName]) { // 有效emoji
+          richTextNode.push({
+            name: 'img',
+            attrs: {
+              width: '30rpx',
+              height: '30rpx',
+              src: emoji[emojiName].img
+            }
+          })
+        } else {//无效emoji
+          richTextNode.push({
+            type: 'text',
+            text: emojiName
+          })
+        }
+        tempStr = tempStr.substring(rightBracketIndex + 1, tempStr.length)
+      }
+    } else { // 开头不是[
+      if (leftBracketIndex == -1) {// 最后全是文字
+        richTextNode.push({
+          type: 'text',
+          text: tempStr.slice(0, tempStr.length)
+        })
+        tempStr = ''
+      } else {
+        richTextNode.push({
+          type: 'text',
+          text: tempStr.slice(0, leftBracketIndex)
+        })
+        tempStr = tempStr.substring(leftBracketIndex, tempStr.length + 1)
+      }
+    }
+  }
+  return richTextNode
+}
+/**
+ * 输出猜拳图片对象，用于生成富文本图片节点
+ */
 function generateFingerGuessImageFile(value) {
   let file = { w: 50, h: 50, url: '' }
   switch (value) {
@@ -159,56 +401,6 @@ function generateBigEmojiImageFile(content) {
   return file
 }
 /**
- * 生成富文本节点
- */
-function generateRichTextNode(text) {
-  let tempStr = text
-  let richTextNode = []
-  let leftBracketIndex = tempStr.indexOf('['),
-    rightBracketIndex = 0
-  if (leftBracketIndex == -1) {//没有emoji
-    richTextNode.push({
-      type: 'text',
-      text: tempStr
-    })
-    return richTextNode
-  }
-
-  while (tempStr.length != 0) {
-    if (leftBracketIndex != 0) {//最前面是文本
-      if (leftBracketIndex == -1) {// 最后全是文字
-        richTextNode.push({
-          type: 'text',
-          text: tempStr.slice(0, tempStr.length)
-        })
-        tempStr = ''
-      } else {
-        richTextNode.push({
-          type: 'text',
-          text: tempStr.slice(0, leftBracketIndex)
-        })
-        tempStr = tempStr.substring(leftBracketIndex, tempStr.length + 1)
-      }
-    } else {// 前面是[
-      rightBracketIndex = tempStr.indexOf(']')
-      let emojiName = tempStr.slice(0, rightBracketIndex + 1)
-      if (emoji[emojiName]) {
-        richTextNode.push({
-          name: 'img',
-          attrs: {
-            width: '30rpx',
-            height: '30rpx',
-            src: emoji[emojiName].img
-          }
-        })
-      }
-      tempStr = tempStr.substring(rightBracketIndex + 1, tempStr.length)
-    }
-    leftBracketIndex = tempStr.indexOf('[')
-  }
-  return richTextNode
-}
-/**
  * 处理图片富文本节点
  */
 function generateImageNode(file) {
@@ -233,51 +425,18 @@ function generateImageNode(file) {
   return richTextNode
 }
 /**
- * 深度克隆
- */
-function deepClone(srcObj, out) {
-  let outObj = out || {}
-  for(let key in srcObj) {
-    if(typeof srcObj[key] === 'object') {
-      outObj[key] = (srcObj[key].constructor === Array) ? [] : {}
-      deepClone(srcObj[key], outObj[key])
-    } else {
-      outObj[key] = srcObj[key]
-    }
-  }
-  return outObj
-}
-/**
- * 判断自定义文件类型
- */
-function judgeCustomMessageType(type, content) {
-  let res = ''
-  if (type === 'custom' && content['type'] === 1) {
-    res = '猜拳'
-  } else if (type === 'custom' && content['type'] === 2) {
-    res = '阅后即焚'
-  } else if (type === 'custom' && content['type'] === 3) {
-    res = '贴图表情'
-  } else if (type === 'custom' && content['type'] === 4) {
-    res = '白板消息'
-  } else {
-    res = type
-  }
-  return res
-}
-/**
  * 单击用户头像，查询并跳转到指定页面
  * account: 账户, isPush: 新页面是跳转方式，true为压栈，false为重定向
  */
 function clickLogoJumpToCard(account, isPush) {
-  var app = getApp()
+  let app = getApp()
   let isFriend = true
   let friendsAccountArr = []
   app.globalData.friends.map(friend => {
     friendsAccountArr.push(friend.account)
   })
   if (friendsAccountArr.indexOf(account) !== -1) {
-    if(isPush === true) {
+    if (isPush === true) {
       wx.navigateTo({
         url: '/partials/personcard/personcard?account=' + account,
       })
@@ -286,69 +445,45 @@ function clickLogoJumpToCard(account, isPush) {
         url: '/partials/personcard/personcard?account=' + account,
       })
     }
-    
+
   } else {
     app.globalData.nim.getUser({
       account: account,
       done: function (err, user) {
         if (err) {
-          // console.log(err)
+          console.log(err)
           return
         }
-        if(isPush === true) {
+        if (isPush === true) {
           wx.navigateTo({
-            url: '/partials/strangercard/strangercard?user=' + encodeURIComponent(JSON.stringify(user)),
+            url: '/partials/strangercard/strangercard?account=' + user.account,
           })
         } else {
           wx.redirectTo({
-            url: '/partials/strangercard/strangercard?user=' + encodeURIComponent(JSON.stringify(user)),
+            url: '/partials/strangercard/strangercard?account=' + user.account,
           })
         }
-        
+
       }
     })
   }
 }
-/** 
- * post 方法，接受params参数对象
- */
-function post(params) {
-  let url   = params.url,
-    header  = params.header || {},
-    data    = params.data;
-  
-  return new Promise((resolve, reject) => {
-    wx.request({
-      url: url,
-      data: data,
-      header: header,
-      method: 'POST',
-      success: function (data, statusCode, header) {
-        resolve({ data, statusCode, header })
-      },
-      fail: function () {
-        reject('请求失败，请重试！')
-      }
-    })
-  })
-  
-}
-
 module.exports = {
   formatDate,
   formatTime,
-  pushLog,
-  clearLog,
   post,
+  firstLetterUpper,
   checkStringLength,
   validStringType,
   sortStringArray,
   calcTimeHeader,
+  showToast,
+  updateMultiPortStatus,
+  correctData,
+  deepClone,
+  clickLogoJumpToCard,
+  generateRichTextNode,
   generateFingerGuessImageFile,
   generateBigEmojiImageFile,
-  generateRichTextNode,
-  generateImageNode,
-  deepClone,
-  judgeCustomMessageType,
-  clickLogoJumpToCard
+  generateImageNode
 }

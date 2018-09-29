@@ -1,8 +1,13 @@
+import { connect } from '../../redux/index.js'
 import { getPinyin } from '../../utils/pinyin.js'
-import { deepClone } from '../../utils/util.js'
+import { deepClone, showToast } from '../../utils/util.js'
 
-var app = getApp()
-Page({
+let app = getApp()
+let store = app.store
+
+const SpecialCharBetweenAccountAndNick = '!@!'
+
+let pageConfig = {
   /**
    * 页面的初始数据
    */
@@ -18,19 +23,11 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
-    wx.setNavigationBarTitle({
-      title: '选择联系人',
-    })
     let paramString = decodeURIComponent(options.data)
     this.setData({
       paramString
     })
-    // console.log(paramString)
-    let accounts = app.globalData.friends.map(item => item.account)
-    // console.log(accounts)
-    // console.log(app.globalData.friendsWithCard)
-    this.calcForwardFriendList(app.globalData.friendsWithCard)
-    // console.log(app.globalData.rawMessageList)
+    this.calcForwardFriendList()
   },
   /**
    * 单击进行转发
@@ -38,8 +35,8 @@ Page({
   radioChange(e) {
     let self = this
     let accountAndNick = e.detail.value
-    let chatTo = accountAndNick.split('!@!')[0]
-    let nick = accountAndNick.split('!@!')[1]
+    let chatTo = accountAndNick.split(SpecialCharBetweenAccountAndNick)[0]
+    let nick = accountAndNick.split(SpecialCharBetweenAccountAndNick)[1]
     self.setData({
       chatTo,
       nick
@@ -47,11 +44,9 @@ Page({
     wx.showModal({
       title: '确认转发？',
       content: `确认转发给${nick}`,
-      success: function(res) {
-        if(res.confirm) {
+      success: function (res) {
+        if (res.confirm) {
           self.sendMsg()
-        } else {
-          // console.log('取消')
         }
       }
     })
@@ -62,60 +57,37 @@ Page({
   sendMsg() {
     // 参数是用来取消息的
     let paramObj = JSON.parse(this.data.paramString)
-    let chatTo = paramObj.chatTo
-    let unixTime = paramObj.time
-    let message = app.globalData.rawMessageList[chatTo][unixTime]
-    // console.log(message)
+    let message = this.data.rawMessageList[paramObj.chatTo][paramObj.time]
     this.forwardMessage(this.data.chatTo, message)
-    
   },
+  /**
+   * 调用发送api发送数据
+   */
   forwardMessage(account, msg) {
     let self = this
     app.globalData.nim.forwardMsg({
       msg: msg,
       scene: 'p2p',
       to: account,
-      done: function(err, msg) {
-        if(err) {
+      done: function (err, msg) {
+        if (err) {
           console.log(err)
           return
         }
-        wx.showToast({
-          title: '转发成功',
-          icon: 'none',
-          duration: 1500
+        showToast('text', '转发成功')
+        // 存储到store
+        store.dispatch({
+          type: 'RawMessageList_Add_Msg',
+          payload: msg
         })
-        // 存储到全局 并 存储到最近会话列表中
-        let type = ''
-        if (msg.type === 'custom' && JSON.parse(msg['content'])['type'] === 1) {
-          type = '猜拳'
-        } else if (msg.type === 'custom' && JSON.parse(msg['content'])['type'] === 3) {
-          type = '贴图表情'
-        } else {
-          type = msg.type
-        }
-        self.saveMsgToGlobalAndRecent(msg, {
-          from: msg.from,
-          to: msg.to,
-          type: type,
-          scene: msg.scene,
-          text: msg.text,
-          sendOrReceive: 'send',
-          displayTimeHeader: '', 
-          tip: msg.tip,
-          content: msg.content,
-          file: msg.file || {},
-          video: msg.file || {},
-          audio: msg.file || {},
-          geo: msg.geo || {}
+        // 修改store中聊天对象
+        store.dispatch({
+          type: 'CurrentChatTo_Change',
+          payload: account
         })
-        // console.log('转发', app.globalData.rawMessageList)
-        app.globalData.rawMessageList[account] = app.globalData.rawMessageList[account] || {}
-        app.globalData.rawMessageList[account][msg.time] = deepClone(msg)
-        // 更新列表
-        app.globalData.subscriber.emit('UPDATE_RECENT_CHAT_FORWARDCONTACT', { account: msg.to, time: msg.time, text: msg.text, type: msg.type })
+        // 跳转到新页面
         wx.redirectTo({
-          url: `../chating/chating?chatTo=${account}&nick=${self.data.nick}`,
+          url: `../chating/chating?chatTo=${account}`,
         })
       }
     })
@@ -127,22 +99,22 @@ Page({
     let self = this
     let friendCata = {}
     let cataHeader = []
-    for (let account in app.globalData.friendsWithCard) {
-      let friendCard = app.globalData.friendsWithCard[account]
+    for (let account in this.data.friendCard) {
+      let friendCard = this.data.friendCard[account]
       let nickPinyin = getPinyin(friendCard.nick, '').toUpperCase()
       if (self.testNum(nickPinyin[0])) { // 数字
         if (!friendCata['#']) {
           friendCata['#'] = []
         }
         friendCata['#'].push({
-          accountAndNick: `${account}!@!${friendCard.nick}`,
+          accountAndNick: `${account}${SpecialCharBetweenAccountAndNick}${friendCard.nick}`,
           account,
           nick: friendCard.nick,
-          avatar: friendCard['avatar'] || self.data.defaultUserLogo,
+          avatar: friendCard['avatar'] || app.globalData.PAGE_CONFIG.defaultUserLogo,
           nickPinyin
         })
         if (friendCata['#'].length >= 2) {
-          friendCata['#'].sort((a,b) => {
+          friendCata['#'].sort((a, b) => {
             return a.nickPinyin > b.nickPinyin
           })
         }
@@ -151,10 +123,10 @@ Page({
           friendCata[nickPinyin[0]] = []
         }
         friendCata[nickPinyin[0]].push({
-          accountAndNick: `${account}!@!${friendCard.nick}`,
+          accountAndNick: `${account}${SpecialCharBetweenAccountAndNick}${friendCard.nick}`,
           account,
           nick: friendCard.nick,
-          avatar: friendCard['avatar'] || self.data.defaultUserLogo,
+          avatar: friendCard['avatar'] || app.globalData.PAGE_CONFIG.defaultUserLogo,
           nickPinyin
         })
         if (friendCata[nickPinyin[0]].length >= 2) {
@@ -176,7 +148,7 @@ Page({
    * 排序
    */
   sortPinyin(arr) {
-    arr.sort((a,b) => {
+    arr.sort((a, b) => {
       return a.nickPinyin.localeCompare(b.nickPinyin)
     })
   },
@@ -186,19 +158,17 @@ Page({
   testNum(char) {
     return /^[0-9]*$/.test(char)
   },
-  /**
-   * 存储消息到全局 以及 最近会话列表
-   */
-  saveMsgToGlobalAndRecent(msg, data) {
-    let self = this
-    // 存储到全局 并 存储到最近会话列表中
-    let loginUserAccount = app.globalData['loginUser']['account']
-    let loginMessageList = app.globalData.messageList[loginUserAccount]
-    if (!loginMessageList[self.data.chatTo]) {
-      loginMessageList[self.data.chatTo] = {} //开始未收到任何消息
-      app.globalData.recentChatList[self.data.chatTo] = {}
-    }
-    loginMessageList[self.data.chatTo][msg.time] = data
-    app.globalData.recentChatList[self.data.chatTo][msg.time] = data
-  },
+}
+
+let mapStateToData = (state) => {
+  // let messageArr = pageConfig.convertRawMessageListToRenderMessageArr(state.rawMessageList[account])
+  return {
+    friendCard: state.friendCard,
+    rawMessageList: state.rawMessageList,
+    // messageArr: messageArr
+  }
+}
+const mapDispatchToPage = (dispatch) => ({
 })
+let connectedPageConfig = connect(mapStateToData, mapDispatchToPage)(pageConfig)
+Page(connectedPageConfig)
