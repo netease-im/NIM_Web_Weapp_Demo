@@ -84,6 +84,7 @@ var MD5 = function (string) {
   };
 
   function Utf8Encode(string) {
+    string = string || ''
     string = string.replace(/\r\n/g, "\n");
     var utftext = "";
 

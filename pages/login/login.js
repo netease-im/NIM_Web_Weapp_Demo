@@ -9,9 +9,17 @@ let pageConfig = {
   },
   // 测试使用
   onLoad() {
-    new IMController({
-      token: '123456',
-      account: 'zys0'
+    this.resetStore()
+  },
+  onShow() {
+    this.resetStore()
+  },
+  /**
+   * 重置store数据
+   */
+  resetStore: function () {
+    store.dispatch({
+      type: 'Reset_All_State'
     })
   },
   /**

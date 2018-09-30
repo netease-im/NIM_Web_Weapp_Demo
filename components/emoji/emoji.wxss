@@ -17,11 +17,11 @@
 }
 .emoji-content-item {
   display: inline-block;
-  margin: 20rpx;
+  margin: 17rpx;
 }
 .emoji-content-img-emoji {
-  width: 50rpx;
-  height: 50rpx;
+  width: 56rpx;
+  height: 56rpx;
 }
 .emoji-content-img-other {
   width: 100rpx;
@@ -30,7 +30,7 @@
 /*底部类别  */
 .emoji-album {
   width: 100%;
-  height: 70rpx;
+  height: 88rpx;
   border: 2rpx solid #999;
   box-sizing: border-box;
   background-color: #fff;
@@ -40,16 +40,16 @@
   height: 100%;
 }
 .emoji-album-left-img {
-  width:70rpx;
+  width:88rpx;
   height:100%;
   padding:8rpx 10rpx;
   box-sizing:border-box;
   border-right:2rpx soild #999
 }
 .emoji-send {
-  width: 80rpx;
+  width: 88rpx;
   height: 100%;
-  line-height:70rpx;
+  line-height:88rpx;
   background-color: #0091e4;
   text-align: center;
   float: right;

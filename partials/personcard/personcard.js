@@ -1,3 +1,4 @@
+import { connect } from '../../redux/index.js'
 import { showToast, correctData } from '../../utils/util.js'
 let app = getApp()
 let store = app.store
@@ -5,18 +6,85 @@ let pageConfig = {
   data: {
     defaultAvatar: app.globalData.PAGE_CONFIG.defaultUserLogo,
     userCard: {},
-    isBlack: false
+    isBlack: false,
+    newValue: '',
+    editFlag: false,
   },
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
     let account = options.account
-    let userCard = store.getState().friendCard[account]
+    let userCard = this.data.friendCard[account]
     this.setData({
       userCard: correctData(userCard),
       isBlack: userCard.isBlack || false
     })
+  },
+  /**
+   * 阻止事件冒泡空函数
+   */
+  stopEventPropagation() {},
+  /**
+   * 修改备注
+   */
+  changeRemark () {
+    this.setData({
+      editFlag: true
+    })
+  },
+  /**
+   * 确认修改备注
+   */
+  valueClickHandler (e) {
+    let data = e.detail.data
+    if (data === 'confirm') {
+      if (this.data.newValue.length === 0) {
+        showToast('text', '请输入内容')
+      } else {
+        this.sureToChangValue()
+      }
+    } else if (data === 'cancel') {
+      this.setData({
+        newValue: '',
+        editFlag: false
+      })
+    }
+  },
+  /**
+   * 备注输入
+   */
+  valueInputChange(e) {
+    this.setData({
+      newValue: e.detail.value
+    })
+  },
+  /**
+   * 发起修改备注请求
+   */
+  sureToChangValue () {
+    var data = {
+      account: this.data.userCard.account,
+      alias: this.data.newValue,
+      remark: this.data.newValue,
+      done: (error, team) => {
+        if (error) {
+          showToast('error', '修改失败')
+          return
+        }
+        let userCard = Object.assign({}, this.data.userCard, { alias: this.data.newValue, remark: this.data.newValue })
+        this.setData({
+          userCard,
+          newValue: '',
+          editFlag: false
+        })
+        store.dispatch({
+          type: 'FriendCard_Update_InfoCard',
+          payload: userCard
+        })
+      }
+    }
+    app.globalData.nim.updateFriend(data)
   },
   /**
    * 删除好友按钮
@@ -64,10 +132,10 @@ let pageConfig = {
     // 更新会话对象
     store.dispatch({
       type: 'CurrentChatTo_Change',
-      payload: this.data.userCard.account
+      payload: 'p2p-' + this.data.userCard.account
     })
     wx.navigateTo({
-      url: '../chating/chating?chatTo=' + this.data.userCard.account,
+      url: '../chating/chating?chatTo=' + this.data.userCard.account + '&type=p2p',
     })
   },
   /**
@@ -135,4 +203,11 @@ let pageConfig = {
     }
   }
 }
-Page(pageConfig)
+let mapStateToData = (state) => {
+  return {
+    friendCard: state.friendCard
+  }
+}
+let connectedPageConfig = connect(mapStateToData)(pageConfig)
+
+Page(connectedPageConfig)

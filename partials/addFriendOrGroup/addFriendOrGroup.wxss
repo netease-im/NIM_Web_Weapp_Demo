@@ -1,10 +1,16 @@
+page {
+  height: auto;
+}
 .addfriend-wrapper {
-  width: 100%;
-  height: 90rpx;
-  margin-top: 40rpx;
+  margin-top: 20rpx;
   display: flex;
-  padding-left:20rpx;
+  width: 100%;
+  height: 96rpx;
+  line-height: 96rpx;
+  padding-left:30rpx;
   box-sizing:border-box;
+  font-size: 32rpx;
+  color: #888;
 }
 .addfriend-input-wrapper {
   width: 90%;
@@ -15,27 +21,24 @@
 }
 .addfriend-search-icon {
   position: absolute;
-  left: 30rpx;
-  top: 65rpx;
+  left: 55rpx;
+  top: 42rpx;
 }
 .addfriend-clear-icon {
   position: absolute;
-  right: 120rpx;
-  top: 68rpx;
+  right: 123rpx;
+  top: 38rpx;
   z-index: 100;
 }
 .addfriend-input {
   width: 100%;
-  color: #999;
   box-sizing:border-box;
-  padding-left:60rpx;
+  padding-left:86rpx;
   align-self:center;
 }
 .addfriend-cancel {
-  height: 100rpx;
-  line-height: 100rpx;
   width: 15%;
+  height: 96rpx;
   background-color: transparent;
-  color: #999;
   text-align: center;
 }

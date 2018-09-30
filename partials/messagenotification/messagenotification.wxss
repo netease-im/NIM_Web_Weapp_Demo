@@ -66,12 +66,24 @@
   align-self: center;
 }
 .notification-item .notification-item-right {
-  margin-left: 20rpx;
+  position: relative;
   display: flex;
+  margin-left: 20rpx;
   flex-direction: column;
   justify-content: center;
-  max-width: 80%; 
+  max-width: 80%;
   font-size: 28rpx;
+  width: 100%;
+}
+.notification-item-right-intro {
+  text-align: right;
+}
+.notification-item-top {
+  overflow: hidden;
+  display: inline-block;
+  width: 100%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 /* .notification-item .notification-item-right .notification-item-top {
   font-size: 28rpx;

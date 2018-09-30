@@ -1,5 +1,7 @@
 import PAGE_CONFIG from '../config/pageConfig.js'
 import emojimap from './emojimap.js'
+import { getPinyin } from './pinyin.js'
+
 var emoji = emojimap.emojiList.emoji
 
 function formatDate(date) {
@@ -105,7 +107,7 @@ function calcTimeHeader(time) {
     return `${year}-${month + 1}-${day} ${hour}:${minute < 10 ? '0' + minute : minute}`
   }
 }
-/** 
+/**
  * post 方法，接受params参数对象
  */
 function post(params) {
@@ -143,7 +145,7 @@ function showToast (type, text, obj) {
       param['title'] = text || ''
       param['icon'] = 'loading'
       break
-    } 
+    }
     case 'success': {
       param['title'] = text || ''
       param['icon'] = 'success'
@@ -285,10 +287,11 @@ function updateMultiPortStatus(data) {
   }
   return '离线'
 }
-/** 
+/**
  * 校验并补全字段
  */
 function correctData (obj) {
+  obj = obj || {}
   let temp = {}
   temp['account'] = obj['account']
   temp['nick'] = obj['nick']
@@ -298,7 +301,8 @@ function correctData (obj) {
   temp['tel'] = obj['tel'] || '未设置'
   temp['email'] = obj['email'] || '未设置'
   temp['sign'] = obj['sign'] || '未设置'
-  obj['remark'] = '未设置'
+  temp['alias'] = obj['alias'] || '未设置'
+  temp['remark'] = obj['remark'] || '未设置'
   return temp
 }
 /**
@@ -468,6 +472,71 @@ function clickLogoJumpToCard(account, isPush) {
     })
   }
 }
+/**
+ * 获取格式化后的好友列表
+ * friendCard: 好友列表（含名片信息）
+ * 获得 friendCata 、 cataHeader
+ */
+function getFormatFriendList(friendCard, defaultUserLogo, excludeList) {
+  excludeList = excludeList || []
+  let friendCardMap = friendCard // key为account，value为该人信息
+  let accountArr = Object.keys(friendCardMap) // accounts数组
+  let accountMapNick = {} // 存储account映射nickPinyin，方便依据account查找friendCata
+  let orderedFriendsCard = [] // 渲染列表常用数据，[{nick: 'test', account: 'nihwo', avatar: 'path', isBlack}]
+  // 循环遍历
+  accountArr.map(account => {
+    if (excludeList.indexOf(account) !== -1) {
+      return
+    }
+    let card = friendCardMap[account]
+    // 没有account说明是非好友情况下拉黑
+    if (!card.account || card.isFriend == false) {
+      return
+    }
+
+    let nickPinyin = getPinyin(card.nick, '').toUpperCase()
+    let renderCard = {
+      'avatar': card.avatar || defaultUserLogo,
+      'account': card.account,
+      'nick': card.nick,
+      'nickPinyin': nickPinyin,
+      'status': card.status,
+      'isBlack': card.isBlack || false
+    }
+    // 存储account映射nickPinyin，方便依据account查找friendCata
+    accountMapNick[card.account] = nickPinyin
+    //刷新视图对象
+    orderedFriendsCard.push(renderCard)
+  })
+
+  // 排序
+  let newOrder = orderedFriendsCard.sort((a, b) => {
+    return a.nickPinyin.localeCompare(b.nickPinyin)
+  })
+  // 数据分类
+  let result = {}
+  newOrder.map((item, index) => {
+    let firstLetter = item.nickPinyin[0]
+    if (!firstLetter || !/^[A-Za-z]*$/.test(firstLetter)) { // 非字母
+      firstLetter = '#'
+    }
+    if (!result[firstLetter]) {
+      result[firstLetter] = []
+    }
+    result[firstLetter].push(item)
+  })
+
+  // 将#类放置最后
+  let tempKeys = Object.keys(result)
+  if (tempKeys[0] == '#') {
+    tempKeys.push(tempKeys.shift())
+  }
+  return {
+    friendCata: result,
+    cataHeader: tempKeys
+  }
+}
+
 module.exports = {
   formatDate,
   formatTime,
@@ -485,5 +554,6 @@ module.exports = {
   generateRichTextNode,
   generateFingerGuessImageFile,
   generateBigEmojiImageFile,
-  generateImageNode
+  generateImageNode,
+  getFormatFriendList
 }

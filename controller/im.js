@@ -9,7 +9,7 @@ let store = app.store
 
 let orderCounter = 1
 // 第一次进去onConnect onBlacklist onMutelist onFriends onMyInfo onUsers onTeams SyncDone onPushEvents
-// 重连 onWillConnect 
+// 重连 onWillConnect
 export default class IMController {
   constructor(headers) {
     app.globalData.nim = NIM.getInstance({
@@ -44,9 +44,15 @@ export default class IMController {
       // 群组
       onteams: this.onTeams,
       onsynccreateteam: this.onCreateTeam,
-      onteammembers: this.onTeamMembers,
-      // // onsyncteammembersdone: onSyncTeamMembersDone,
       onupdateteammember: this.onUpdateTeamMember,
+      onAddTeamMembers: this.onAddTeamMembers,
+      onRemoveTeamMembers: this.onRemoveTeamMembers,
+      onUpdateTeam: this.onUpdateTeam,
+      onUpdateTeamManagers: this.onUpdateTeamManagers,
+      onDismissTeam: this.onDismissTeam,
+      onTransferTeam: this.onTransferTeam,
+      onUpdateTeamMembersMute: this.onUpdateTeamMembersMute,
+      shouldCountNotifyUnread: this.shouldCountNotifyUnread,
       // 会话
       onsessions: this.onSessions,
       onupdatesession: this.onUpdateSession,
@@ -121,6 +127,10 @@ export default class IMController {
    */
   onFriends(friends) {
     console.log(orderCounter++, ' onFriends: ', friends)
+    store.dispatch({
+      type: 'FriendCard_Update_Initial',
+      payload: friends
+    })
   }
   /** 6
    * 个人名片：存储个人信息到全局数据
@@ -128,7 +138,7 @@ export default class IMController {
   onMyInfo(user) {
     console.log(orderCounter++, ' onMyInfo: ')
     store.dispatch({
-      type: 'IM_OnMyInfo', 
+      type: 'IM_OnMyInfo',
       payload: user
     })
   }
@@ -143,16 +153,15 @@ export default class IMController {
     })
   }
   /** 8 同步群列表
-   * onTeams 
+   * onTeams
    */
   onTeams(teams) {
-    /**
-     * [
-     *  {avatar:"",beInviteMode:"needVerify",createTime:1472116310831,inviteMode:"manager",joinMode:"needVerify",level:200,memberNum:3,memberUpdateTime:1472528441186,mute:false,name:"高级群",owner:"15968166810",teamId:"7809054",type:"advanced",updateCustomMode:"manager",updateTeamMode:"manager",updateTime:1472528441204,valid:true,validToCurrentUser:true}
-     * ]
-     */
-    console.log(orderCounter++, ' onTeams')
+    console.log(orderCounter++, 'onTeams')
     console.log(teams)
+    store.dispatch({
+      type: 'Init_Groups',
+      payload: teams
+    })
   }
   /** 9
    * onSyncDone,同步完成
@@ -169,6 +178,7 @@ export default class IMController {
   /**
  * 会话更新：收到消息、发送消息、设置当前会话、重置会话未读数 触发
  * {id:'p2p-zys2',lastMsg:{},scene,to,unread,updateTime}
+ * {id:'team-1389946935',lastMsg:{attach:{accounts,team},type,users},scene,to,from,type,unread,updateTime}
  */
   onUpdateSession(session) {
     console.log('onUpdateSession: ', session)
@@ -185,7 +195,7 @@ export default class IMController {
     console.log('onMsg: 收到消息', msg)
     store.dispatch({
       type: 'RawMessageList_Add_Msg',
-      payload: msg
+      payload: {msg, nim: app.globalData.nim}
     })
   }
   /** 操作主体为对方
@@ -196,7 +206,6 @@ export default class IMController {
   onSysMsg(msg) {
     console.log('onSysMsg: ', msg)
     let account = msg.from
-    
     if (msg.type === 'deleteMsg') {
       store.dispatch({
         type: 'RawMessageList_OppositeRecall_Msg',
@@ -235,6 +244,22 @@ export default class IMController {
         type: 'FriendCard_Delete_By_Account',
         payload: account
       })
+    } else if (msg.type === 'teamInvite') { // category:"team"
+      store.dispatch({
+        type: 'Notification_Team_Invite',
+        payload: {
+          msg,
+          desc: `${msg.from}邀请你入群“${msg.attach.team.name}”`
+        }
+      })
+    } else if (msg.type === 'applyTeam') { // category:"team"
+      store.dispatch({
+        type: 'Notification_Team_Apply',
+        payload: {
+          msg,
+          desc: `${msg.from}申请加入`
+        }
+      })
     }
   }
   /**
@@ -248,6 +273,10 @@ export default class IMController {
         // 账号或者密码错误, 请跳转到登录页面并提示错误
         case 302:
           console.log('onError: 账号或者密码错误')
+          wx.showToast({
+            title: '账号或密码错误',
+            image: '/images/emoji.png'
+          })
           break;
         // 重复登录, 已经在其它端登录了, 请跳转到登录页面并提示错误
         case 417:
@@ -264,6 +293,13 @@ export default class IMController {
               if (res.confirm) { //点击确定
                 wx.redirectTo({
                   url: '/pages/login/login',
+                })
+                app.globalData.nim.destroy({
+                  done: function () {
+                    console.log('destroy nim done !!!')
+                    wx.clearStorage()
+                    wx.hideLoading()
+                  }
                 })
               }
             }
@@ -296,8 +332,6 @@ export default class IMController {
     app.globalData.nim.connect()
   }
 
-
-
   onMarkInBlacklist(obj) {
     console.log(orderCounter++, ' onMarkInBlacklist: ')
     console.log(obj)
@@ -323,23 +357,113 @@ export default class IMController {
     console.log(user)
   }
 
+  /**
+  *   创建群的回调, 此方法接收一个参数, 包含群信息和群主信息
+  */
   onCreateTeam(team) {
     console.log(orderCounter++, ' onCreateTeam')
-    console.log(team)
+    store.dispatch({
+      type: 'Add_Group',
+      payload: team
+    })
   }
-  onTeamMembers(teamId, members) {
-    console.log(orderCounter++, ' onTeamMembers')
-    console.log(teamId, members)
-  }
+  /**
+  *  群成员信息更新后的回调, 会传入群成员对象, 不过此时的信息是不完整的, 只会包括被更新的字段。当前登录帐号在其它端修改自己的群属性时也会收到此回调。
+  */
   onUpdateTeamMember(teamMember) {
-    console.log(orderCounter++, ' onUpdateTeamMember')
-    console.log(teamMember)
+    console.log(orderCounter++, 'onUpdateTeamMember')
+    store.dispatch({
+      type: 'Update_Group_Member',
+      payload: teamMember
+    })
+  }
+  /**
+  *  新成员入群的回调，自己建群成功也回调
+  */
+  onAddTeamMembers(msg) {
+    console.log(orderCounter++, 'onAddTeamMembers')
+    store.dispatch({
+      type: 'Add_Group_Members',
+      payload: msg
+    })
+  }
+  /**
+  *  有人出群的回调
+  */
+  onRemoveTeamMembers(msg) {
+    console.log(orderCounter++, 'onRemoveTeamMembers')
+    store.dispatch({
+      type: 'Del_Group_Member',
+      payload: msg
+    })
+  }
+  /**
+  *  更新群的回调
+  */
+  onUpdateTeam(msg) {
+    console.log(orderCounter++, 'onUpdateTeam')
+    store.dispatch({
+      type: 'Update_Group',
+      payload: msg
+    })
+  }
+  /**
+  *  更新群管理员的回调
+  */
+  onUpdateTeamManagers(msg) {
+    console.log(orderCounter++, 'onUpdateTeamManagers')
+    store.dispatch({
+      type: 'Update_Group_Member_Manager',
+      payload: msg
+    })
+  }
+  /**
+  *  解散群的回调
+  */
+  onDismissTeam(msg) {
+    console.log(orderCounter++, 'onDismissTeam')
+    store.dispatch({
+      type: 'Del_Group',
+      payload: msg
+    })
+  }
+  /**
+  *  移交群的回调
+  */
+  onTransferTeam(msg) {
+    console.log(orderCounter++, 'onTransferTeam')
+    store.dispatch({
+      type: 'Update_Group_Owner',
+      payload: msg
+    })
+  }
+  /**
+  *  更新群成员禁言状态的回调
+  */
+  onUpdateTeamMembersMute(msg) {
+    console.log(orderCounter++, 'onUpdateTeamMembersMute')
+    store.dispatch({
+      type: 'Add_Group_Members',
+      payload: msg
+    })
+  }
+  /**
+  *  群消息通知是否加入未读数开关如果返回true，则计入未读数，否则不计入
+  */
+  shouldCountNotifyUnread(msg) {
+    console.log(orderCounter++, 'shouldCountNotifyUnread')
+    console.log(msg)
+    return true
   }
   /**会话
    * [ {id:"p2p-liuxuanlin",lastMsg:{from:'wujie',text:'222',to:"liuxuanlin"}} ]
    */
   onSessions(sessions) {
     console.log('onSessions: ', sessions)
+    store.dispatch({
+      type: 'SessionUnreadInfo_update',
+      payload: sessions
+    })
   }
   onOfflineMsgs(obj) {
     console.log(orderCounter++, ' onOfflineMsgs')
@@ -353,6 +477,10 @@ export default class IMController {
   onUpdateSysMsg(sysMsg) {
     console.log(orderCounter++, ' onUpdateSysMsg')
     console.log(sysMsg)
+    store.dispatch({
+      type: 'Update_Sys_Msg',
+      payload: sysMsg
+    })
   }
   onSysMsgUnread(obj) {
     console.log(orderCounter++, ' onSysMsgUnread')

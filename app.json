@@ -11,13 +11,20 @@
     "components/inputmodal/inputmodal",
     "partials/personcard/personcard",
     "partials/modifyAccountInfo/modifyAccountInfo",
+    "partials/groupList/groupList",
+    "partials/advancedGroupCard/advancedGroupCard",
+    "partials/normalGroupCard/normalGroupCard",
+    "partials/chooseContact/chooseContact",
+    "partials/announcement/announcement",
+    "partials/advancedGroupMember/advancedGroupMember",
+    "partials/advancedGroupMemberCard/advancedGroupMemberCard",
     "partials/blacklist/blacklist",
     "partials/strangercard/strangercard",
-    "partials/addfriend/addfriend",
+    "partials/addFriendOrGroup/addFriendOrGroup",
     "partials/chating/chating",
     "partials/messageNotification/messageNotification",
     "partials/historyFromCloud/historyFromCloud",
-    "partials/forwardcontact/forwardcontact"
+    "partials/forwardContact/forwardContact"
   ],
   "window": {
     "backgroundColor": "#f0f0f0",
