@@ -1,6 +1,0 @@
-{
-  "navigationBarTitleText": "",
-  "usingComponents": {
-    "swipe-delete": "../../components/swipedelete/swipedelete"
-  }
-}
