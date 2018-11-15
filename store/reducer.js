@@ -265,6 +265,7 @@ let indexReducer = (state = INITIAL_STATE, action) => {
       msg.msgs.map((item) => {
         tempState.rawMessageList[sessionId][item.time] = Object.assign({}, item)
       })
+      console.log('rawMessageList', tempState.rawMessageList)
       return Object.assign({}, state, tempState)
     }
     // RawMessageList：替换其中的指定消息

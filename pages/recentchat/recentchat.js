@@ -281,7 +281,6 @@ let pageConfig = {
         let status =  isP2p ?  (sessionCard.status || '离线') : ''
         let nick = isP2p ? (sessionCard.nick || '非好友') : sessionCard.name
         let avatar =  isP2p ? (sessionCard.avatar || app.globalData.PAGE_CONFIG.defaultUserLogo) : (sessionCard.avatar || app.globalData.PAGE_CONFIG.defaultUserLogo)
-        // TODO：此处存在逻辑漏洞，好友的时候发送消息，然后对方删除好友，再次登录后，会出错
         chatList.push({
           chatType,
           session,

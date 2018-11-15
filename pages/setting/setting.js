@@ -102,7 +102,7 @@ let pageConfig = {
         break;
     }
   },
-  /** todo
+  /**
    * 登出
    */
   logout: function () {

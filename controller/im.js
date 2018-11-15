@@ -573,11 +573,6 @@ export default class IMController {
     }
     /** 群视频通知 */
     if (id == 3) {
-      /** 针对讨论组这里有个问题：
-       * 1. 创建讨论组、拉人进讨论组 不会通知被邀请人，被邀请人不知道状态，无法更新
-       * 2. 发起群视频，是定通知先到达，tip消息后到达
-       * 3. 为了解决这个时差内无法获取讨论组信息，这个设置一个延时
-       */
       // {apnsText,content:{id,members,teamId,room,type},from,to}
       let pages = getCurrentPages()
       let currentPage = pages[pages.length - 1]
