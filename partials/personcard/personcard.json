@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "个人名片"
+  "navigationBarTitleText": "个人名片",
+  "usingComponents": {
+    "input-modal": "/components/inputmodal/inputmodal"
+  }
 }

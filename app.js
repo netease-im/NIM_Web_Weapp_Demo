@@ -12,10 +12,22 @@ App(
   Provider(store)(
     {
       globalData: {
+        emitter: null,
+        netcallController: null,
         ENVIRONMENT_CONFIG,
         PAGE_CONFIG
       },
-      onLaunch: function () {}
+      onLaunch: function () {
+        let userInfo = wx.getStorageSync('userInfo')
+        if (userInfo) {
+          this.globalData.userInfo = userInfo
+        }
+        let systemInfo = wx.getSystemInfoSync()
+        this.globalData.videoContainerSize = {
+          width: systemInfo.windowWidth,
+          height: systemInfo.windowHeight
+        }
+      }
     }
   )
 )

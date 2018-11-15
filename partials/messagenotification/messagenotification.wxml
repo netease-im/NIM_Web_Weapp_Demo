@@ -11,10 +11,11 @@
     <view wx:if="{{notificationList.system.length !== 0}}" class='notificationList-content' style='max-height: {{windowMaxHeight}}px;'>
       <view wx:for="{{notificationList.system}}" wx:for-item="notification" wx:key="*this" wx:for-index="index" data-data="{{index}}" catchtap='deleteSysItem'>
         <swipe-delete>
-          <view class='notification-item'>
-            <image src='/images/notice.png' class='notification-item-img'></image>
+          <view class='notification-item'  data-data="{{index}}" catchtap='actionSysItem'>
+            <image src='/images/notice.png' class='notification-item-img' ></image>
             <view class='notification-item-right'>
               <text class='notification-item-top'>{{notification.desc}}</text>
+              <text wx:if="{{notification.state}}" class='notification-item-right-intro'>{{notification.state}}</text>
             </view>
           </view>
         </swipe-delete>

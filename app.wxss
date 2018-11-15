@@ -1,9 +1,10 @@
 page {
-  background-color: #e7e7e7;
   color: #000;
   font-size: 30rpx;
   width: 100%;
   height: 100%;
+  font-family: PingFangSC-Regular;
+  background-color: #F3F4F6;
 }
 .container {
   height: 100%;
@@ -14,6 +15,10 @@ page {
   padding: 200rpx 0;
   box-sizing: border-box;
 } 
+.fullscreen {
+  width: 100%;
+  height: 100%;
+}
 .background-wrapper {
   width: 100%;
   height: 100%;

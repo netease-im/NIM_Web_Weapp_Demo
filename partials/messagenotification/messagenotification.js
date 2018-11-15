@@ -1,5 +1,5 @@
 import { iconNoMessage } from '../../utils/imageBase64.js'
-import { deepClone } from '../../utils/util.js'
+import { deepClone, showToast } from '../../utils/util.js'
 import { connect } from '../../redux/index.js'
 let app = getApp()
 let store = app.store
@@ -75,6 +75,47 @@ let pageConfig = {
   deleteCusItem(e) {
     let index = e.currentTarget.dataset.data
     this.deleteItem('cus', index)
+  },
+  /**
+   * 操作系统通知条目
+   */
+  actionSysItem(e) {
+    let index = e.currentTarget.dataset.data
+    let list = this.data.notificationList.system
+    if (list[index].type === 'team') {
+      if (list[index].state) {
+        return
+      }
+      let data = {
+        idServer: list[index].idServer,
+        teamId: list[index].teamId,
+        from: list[index].from,
+        done: (error, obj) => {
+          if (error) {
+            showToast('error', '操作失败')
+            return
+          }
+        }
+      }
+      wx.showActionSheet({
+        itemList: ['同意', '拒绝'],
+        success: (res) => {
+          if (res.tapIndex == 0) {
+            if (list[index].teamAction === 'invite') {
+              app.globalData.nim.acceptTeamInvite(data) // 接受入群邀请
+            } else if (list[index].teamAction === 'apply') {
+              app.globalData.nim.passTeamApply(data) // 拒绝入群申请
+            }
+          } else if (res.tapIndex == 1) {
+            if (list[index].teamAction === 'invite') {
+              app.globalData.nim.rejectTeamInvite(data) // 拒绝入群邀请
+            } else if (list[index].teamAction === 'apply') {
+              app.globalData.nim.rejectTeamApply(data) // 拒绝入群申请
+            }
+          }
+        }
+      })
+    }
   },
   /**
    * 删除系统通知条目

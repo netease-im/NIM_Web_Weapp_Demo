@@ -13,8 +13,8 @@ let pageConfig = {
    */
   data: {
     chatTo: '',
+    chatType: 'p2p',
     nick: '',
-    paramString: '',// 传递过来的参数
     defaultUserLogo: '/images/default-icon.png',
     friendCata: {},//按照类别排好序的数据 {'a': [{'account':'','nick':'',avatar:'',nickPinyin:'',accountAndNick:''}]}（如有#则在最前）
     cataHeader: [], //首字母列表(如有#则在最后)
@@ -23,10 +23,8 @@ let pageConfig = {
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
-    let paramString = decodeURIComponent(options.data)
-    this.setData({
-      paramString
-    })
+    let paramString = JSON.parse(decodeURIComponent(options.data))
+    this.setData({ paramString })
     this.calcForwardFriendList()
   },
   /**
@@ -56,8 +54,8 @@ let pageConfig = {
    */
   sendMsg() {
     // 参数是用来取消息的
-    let paramObj = JSON.parse(this.data.paramString)
-    let message = this.data.rawMessageList[paramObj.chatTo][paramObj.time]
+    let sessionId = (this.data.paramString.chatType === 'p2p' ? 'p2p-' : 'team-') + this.data.paramString.chatTo
+    let message = this.data.rawMessageList[sessionId][this.data.paramString.time]
     this.forwardMessage(this.data.chatTo, message)
   },
   /**
@@ -78,16 +76,16 @@ let pageConfig = {
         // 存储到store
         store.dispatch({
           type: 'RawMessageList_Add_Msg',
-          payload: msg
+          payload: { msg }
         })
         // 修改store中聊天对象
         store.dispatch({
           type: 'CurrentChatTo_Change',
-          payload: account
+          payload: 'p2p-' + account
         })
         // 跳转到新页面
         wx.redirectTo({
-          url: `../chating/chating?chatTo=${account}`,
+          url: `../chating/chating?chatTo=${account}&type=${self.data.chatType}`,
         })
       }
     })
@@ -102,7 +100,7 @@ let pageConfig = {
     for (let account in this.data.friendCard) {
       let friendCard = this.data.friendCard[account]
       let nickPinyin = getPinyin(friendCard.nick, '').toUpperCase()
-      if (self.testNum(nickPinyin[0])) { // 数字
+      if (!nickPinyin[0] || self.testNum(nickPinyin[0]) || !/^[A-Za-z]*$/.test(nickPinyin[0])) { // 数字、空格、非字母
         if (!friendCata['#']) {
           friendCata['#'] = []
         }
@@ -118,7 +116,7 @@ let pageConfig = {
             return a.nickPinyin > b.nickPinyin
           })
         }
-      } else { // 非数字，即字母
+      } else { 
         if (!friendCata[nickPinyin[0]]) {// 已存在此条目,第一个为字母
           friendCata[nickPinyin[0]] = []
         }

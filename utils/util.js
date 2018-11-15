@@ -1,5 +1,7 @@
 import PAGE_CONFIG from '../config/pageConfig.js'
 import emojimap from './emojimap.js'
+import { getPinyin } from './pinyin.js'
+const app = getApp()
 var emoji = emojimap.emojiList.emoji
 
 function formatDate(date) {
@@ -105,7 +107,7 @@ function calcTimeHeader(time) {
     return `${year}-${month + 1}-${day} ${hour}:${minute < 10 ? '0' + minute : minute}`
   }
 }
-/** 
+/**
  * post 方法，接受params参数对象
  */
 function post(params) {
@@ -143,7 +145,7 @@ function showToast (type, text, obj) {
       param['title'] = text || ''
       param['icon'] = 'loading'
       break
-    } 
+    }
     case 'success': {
       param['title'] = text || ''
       param['icon'] = 'success'
@@ -285,10 +287,11 @@ function updateMultiPortStatus(data) {
   }
   return '离线'
 }
-/** 
+/**
  * 校验并补全字段
  */
 function correctData (obj) {
+  obj = obj || {}
   let temp = {}
   temp['account'] = obj['account']
   temp['nick'] = obj['nick']
@@ -298,7 +301,8 @@ function correctData (obj) {
   temp['tel'] = obj['tel'] || '未设置'
   temp['email'] = obj['email'] || '未设置'
   temp['sign'] = obj['sign'] || '未设置'
-  obj['remark'] = '未设置'
+  temp['alias'] = obj['alias'] || '未设置'
+  temp['remark'] = obj['remark'] || '未设置'
   return temp
 }
 /**
@@ -468,9 +472,424 @@ function clickLogoJumpToCard(account, isPush) {
     })
   }
 }
+/**
+ * 获取格式化后的好友列表
+ * friendCard: 好友列表（含名片信息）
+ * 获得 friendCata 、 cataHeader
+ */
+function getFormatFriendList(friendCard, defaultUserLogo, excludeList) {
+  excludeList = excludeList || []
+  let friendCardMap = friendCard // key为account，value为该人信息
+  let accountArr = Object.keys(friendCardMap) // accounts数组
+  let accountMapNick = {} // 存储account映射nickPinyin，方便依据account查找friendCata
+  let orderedFriendsCard = [] // 渲染列表常用数据，[{nick: 'test', account: 'nihwo', avatar: 'path', isBlack}]
+  // 循环遍历
+  accountArr.map(account => {
+    if (excludeList.indexOf(account) !== -1) {
+      return
+    }
+    let card = friendCardMap[account]
+    // 没有account说明是非好友情况下拉黑
+    if (!card.account || card.isFriend == false) {
+      return
+    }
+
+    let nickPinyin = getPinyin(card.nick, '').toUpperCase()
+    let renderCard = {
+      'avatar': card.avatar || defaultUserLogo,
+      'account': card.account,
+      'nick': card.nick,
+      'nickPinyin': nickPinyin,
+      'status': card.status,
+      'isBlack': card.isBlack || false
+    }
+    // 存储account映射nickPinyin，方便依据account查找friendCata
+    accountMapNick[card.account] = nickPinyin
+    //刷新视图对象
+    orderedFriendsCard.push(renderCard)
+  })
+
+  // 排序
+  let newOrder = orderedFriendsCard.sort((a, b) => {
+    return a.nickPinyin.localeCompare(b.nickPinyin)
+  })
+  // 数据分类
+  let result = {}
+  newOrder.map((item, index) => {
+    let firstLetter = item.nickPinyin[0]
+    if (!firstLetter || !/^[A-Za-z]*$/.test(firstLetter)) { // 非字母
+      firstLetter = '#'
+    }
+    if (!result[firstLetter]) {
+      result[firstLetter] = []
+    }
+    result[firstLetter].push(item)
+  })
+
+  // 将#类放置最后
+  let tempKeys = Object.keys(result)
+  if (tempKeys[0] == '#') {
+    tempKeys.push(tempKeys.shift())
+  }
+  return {
+    friendCata: result,
+    cataHeader: tempKeys
+  }
+}
+/**
+ * 计算多人情况下推拉流组件位置以及宽高
+ */
+function calculateMeetingPosition(newUserList = [], oldUserList = [], config) {
+  config = config || {}
+  let containerSize = app.globalData.videoContainerSize // 外部容器大小
+  let totalCount = newUserList.length + oldUserList.length // 内部所有video的个数
+  let resultUserList = oldUserList.concat(newUserList) // 返回的结果集
+  let width = containerSize.width / 3
+  let height = width
+  const spaceWidth = 5 // 画面间的间隔
+  switch (totalCount) {
+    case 1: {
+      resultUserList[0].config = {
+        x: 0,
+        y: 0,
+        width,
+        height
+      }
+      break
+    }
+    case 2: {
+      resultUserList[0].config = {
+        x: 0,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[1].config = {
+        x: width,
+        y: 0,
+        width,
+        height
+      }
+      break
+    }
+    case 3: {
+      resultUserList[0].config = {
+        x: 0,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[1].config = {
+        x: width,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[2].config = {
+        x: width * 2,
+        y: 0,
+        width,
+        height
+      }
+      break
+    }
+    case 4: {
+      resultUserList[0].config = {
+        x: 0,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[1].config = {
+        x: width,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[2].config = {
+        x: width * 2,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[3].config = {
+        x: 0,
+        y: height,
+        width,
+        height
+      }
+      break
+    }
+    case 5: {
+      resultUserList[0].config = {
+        x: 0,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[1].config = {
+        x: width,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[2].config = {
+        x: width * 2,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[3].config = {
+        x: 0,
+        y: height,
+        width,
+        height
+      }
+      resultUserList[4].config = {
+        x: width,
+        y: height,
+        width,
+        height
+      }
+      break
+    }
+    case 6: {
+      resultUserList[0].config = {
+        x: 0,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[1].config = {
+        x: width,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[2].config = {
+        x: width * 2,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[3].config = {
+        x: 0,
+        y: height,
+        width,
+        height
+      }
+      resultUserList[4].config = {
+        x: width,
+        y: height,
+        width,
+        height
+      }
+      resultUserList[5].config = {
+        x: width * 2,
+        y: height,
+        width,
+        height
+      }
+      break
+    }
+    case 7: {
+      resultUserList[0].config = {
+        x: 0,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[1].config = {
+        x: width,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[2].config = {
+        x: width * 2,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[3].config = {
+        x: 0,
+        y: height,
+        width,
+        height
+      }
+      resultUserList[4].config = {
+        x: width,
+        y: height,
+        width,
+        height
+      }
+      resultUserList[5].config = {
+        x: width * 2,
+        y: height,
+        width,
+        height
+      }
+      resultUserList[6].config = {
+        x: 0,
+        y: height * 2,
+        width,
+        height
+      }
+      break
+    }
+    case 8: {
+      resultUserList[0].config = {
+        x: 0,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[1].config = {
+        x: width,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[2].config = {
+        x: width * 2,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[3].config = {
+        x: 0,
+        y: height,
+        width,
+        height
+      }
+      resultUserList[4].config = {
+        x: width,
+        y: height,
+        width,
+        height
+      }
+      resultUserList[5].config = {
+        x: width * 2,
+        y: height,
+        width,
+        height
+      }
+      resultUserList[6].config = {
+        x: 0,
+        y: height * 2,
+        width,
+        height
+      }
+      resultUserList[7].config = {
+        x: width,
+        y: height * 2,
+        width,
+        height
+      }
+      break
+    }
+    case 9: {
+      resultUserList[0].config = {
+        x: 0,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[1].config = {
+        x: width,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[2].config = {
+        x: width * 2,
+        y: 0,
+        width,
+        height
+      }
+      resultUserList[3].config = {
+        x: 0,
+        y: height,
+        width,
+        height
+      }
+      resultUserList[4].config = {
+        x: width,
+        y: height,
+        width,
+        height
+      }
+      resultUserList[5].config = {
+        x: width * 2,
+        y: height,
+        width,
+        height
+      }
+      resultUserList[6].config = {
+        x: 0,
+        y: height * 2,
+        width,
+        height
+      }
+      resultUserList[7].config = {
+        x: width,
+        y: height * 2,
+        width,
+        height
+      }
+      resultUserList[8].config = {
+        x: width * 2,
+        y: height * 2,
+        width,
+        height
+      }
+      break
+    }
+  }
+  return resultUserList
+}
+/**
+ * 计算p2p情况下推拉流组件位置以及宽高
+ */
+function calculateP2PPosition(newUserList, oldUserList, config) {
+  config = config || {}
+  let containerSize = app.globalData.videoContainerSize // 外部容器大小
+  let totalCount = newUserList.length + oldUserList.length // 内部所有video的个数
+  let resultUserList = oldUserList.concat(newUserList) // 返回的结果集
+  switch (totalCount) {
+    case 1: {
+      resultUserList[0].config = {
+        x: 0,
+        y: 0,
+        width: containerSize.width,
+        height: containerSize.height
+      }
+      break
+    }
+    case 2: {
+      resultUserList[0].config = {
+        x: 0,
+        y: 0,
+        width: containerSize.width,
+        height: containerSize.height
+      }
+      resultUserList[1].config = {
+        x: containerSize.width - 100 - 30,
+        y: 30,
+        width: 100,
+        height: 150
+      }
+      break
+    }
+  }
+  return resultUserList
+}
 module.exports = {
+  calculateMeetingPosition,
+  calculateP2PPosition,
   formatDate,
   formatTime,
+  formatNumber,
   post,
   firstLetterUpper,
   checkStringLength,
@@ -485,5 +904,6 @@ module.exports = {
   generateRichTextNode,
   generateFingerGuessImageFile,
   generateBigEmojiImageFile,
-  generateImageNode
+  generateImageNode,
+  getFormatFriendList
 }

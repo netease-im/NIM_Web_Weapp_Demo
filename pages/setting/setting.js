@@ -2,7 +2,7 @@ import { connect } from '../../redux/index.js'
 import { showToast, correctData } from '../../utils/util.js'
 import { iconRightArrow } from '../../utils/imageBase64.js'
 let app = getApp()
-let store = app.store 
+let store = app.store
 let pageConfig = {
   /**
    * 页面的初始数据
@@ -22,7 +22,7 @@ let pageConfig = {
   dateChange(e) {
     let birth = e.detail.value
     // 更新服务器数据
-    app.globalData.nim.updateMyInfo({ birth }) 
+    app.globalData.nim.updateMyInfo({ birth })
     // 更新本地数据
     store.dispatch({
       type: 'UserInfo_Update_Birthday',
@@ -102,7 +102,7 @@ let pageConfig = {
         break;
     }
   },
-  /** 
+  /** todo
    * 登出
    */
   logout: function () {
@@ -112,10 +112,6 @@ let pageConfig = {
     app.globalData.nim.destroy({
       done: function () {
         console.log('destroy nim done !!!')
-        // 清空store数据
-        store.dispatch({
-          type: 'Reset_All_State'
-        })
         wx.clearStorage()
         wx.hideLoading()
         wx.reLaunch({

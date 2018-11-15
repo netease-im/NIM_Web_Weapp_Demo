@@ -1,14 +1,18 @@
 import { showToast, calcTimeHeader, generateFingerGuessImageFile, generateBigEmojiImageFile, generateRichTextNode, generateImageNode } from '../../utils/util.js'
+import dealGroupMsg from '../../utils/dealGroupMsg.js'
 import { voice } from '../../utils/imageBase64.js'
 import { connect } from '../../redux/index.js'
+import * as iconBase64Map from '../../utils/imageBase64.js'
 
 let app = getApp()
 let store = app.store
 
 let pageConfig = {
   data: {
+    defaultUserLogo: app.globalData.PAGE_CONFIG.defaultUserLogo,
     chatTo: '',
     voiceIcon: '',// 小喇叭图标base64
+    iconBase64Map: {}, //发送栏base64图标集合
     messageArr: [], //[{scene,from,fromNick,flow,to,text,type,time,content,file,geo,displayTimeHeader]}]
     endTime: new Date().getTime(), // 存储上次加载的最后一条消息的时间，后续加载更多使用
     limit: 20, // 每次查询结果
@@ -22,9 +26,10 @@ let pageConfig = {
   onLoad: function (options) {
     // console.log(options)
     this.setData({
+      iconBase64Map: iconBase64Map,
       chatTo: options.account,
+      chatType: options.chatType,
       voiceIcon: voice,
-      chatToLogo: decodeURIComponent(options.chatToLogo),
       userLogo: this.data.userInfo.avatar || app.globalData.PAGE_CONFIG.defaultUserLogo
     })
     this.getHistoryMsgs(true)
@@ -48,7 +53,7 @@ let pageConfig = {
       title: '加载历史消息中',
     })
     app.globalData.nim.getHistoryMsgs({
-      scene: 'p2p',
+      scene: this.data.chatType === 'p2p' ? 'p2p' : 'team',
       to: this.data.chatTo,
       limit: this.data.limit,
       asc: true,// 时间正序排序
@@ -78,8 +83,9 @@ let pageConfig = {
         historyAllDone: true
       })
     }
+    obj.msgs.map(item => dealGroupMsg.dealMsg(item, null, this.data.userInfo.account))
     this.setData({
-      endTime: obj.msgs[0].time
+      endTime: obj.msgs[0] && obj.msgs[0].time || new Date().getTime()
     })
     this.setData({
       messageArr: [...this.convertRawMessageListToRenderMessageArr(obj.msgs), ...this.data.messageArr]
@@ -169,7 +175,7 @@ let pageConfig = {
   /**
    * 原始消息列表转化为适用于渲染的消息列表
    * [{flow,from,fromNick,idServer,scene,sessionId,text,target,to,time...}]
-   * => 
+   * =>
    * [{text, time, sendOrReceive: 'send', displayTimeHeader, nodes: []},{type: 'geo',geo: {lat,lng,title}}]
    */
   convertRawMessageListToRenderMessageArr(rawMsgList) {
@@ -262,6 +268,15 @@ let pageConfig = {
           }
           break
         }
+        case 'notification':
+          specifiedObject = {
+            text: rawMsg.groupNotification,
+            nodes: [{
+              type: 'text',
+              text: rawMsg.groupNotification
+            }]
+          }
+          break;
         default: {
           break
         }
@@ -269,6 +284,7 @@ let pageConfig = {
       messageArr.push(Object.assign({}, {
         type: msgType,
         text: rawMsg.text || '',
+        from: rawMsg.from,
         time: rawMsg.time,
         sendOrReceive,
         displayTimeHeader
@@ -279,7 +295,8 @@ let pageConfig = {
 }
 let mapStateToData = (state) => {
   return {
-    userInfo: state.userInfo
+    userInfo: state.userInfo,
+    personList: state.personList
   }
 }
 let mapDispatchToPage = dispatch => {}

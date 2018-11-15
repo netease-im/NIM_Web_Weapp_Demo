@@ -5,6 +5,7 @@
   /* margin: 70rpx 0 100rpx; */
   box-sizing: border-box;
   /* overflow: hidden; */
+  background: #F3F4F6;
 }
 /*聊天记录  */
 .record-wrapper {
@@ -23,9 +24,11 @@
   justify-content:center;
 }
 .record-item-time {
-  border-radius: 10rpx;
-  background-color: #ccc;
   padding:4rpx 10rpx;
+  background: #D6D6D6;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  color: #fff;
 }
 .record-chatting-item-img {
   width: 80rpx;
@@ -36,7 +39,7 @@
 .record-chatting-item-text {
   max-width: 70%;
   border-radius: 10rpx;
-  background-color: #80a1d5;
+  background-color: #3387FF;
   padding: 16rpx;
   box-sizing:border-box;
   word-wrap:break-word;
@@ -47,7 +50,8 @@
   background-color:#ccc;
   text-align:center;
   align-self:center;
-  height:40rpx;
+  min-height:40rpx;
+  word-break:break-word;
   font-size:26rpx;
   padding:0 20rpx;
   color:#000;
@@ -66,28 +70,28 @@
   justify-content: flex-start;
   color: #fff;
 }
-.left-triangle{  
-  height:0px;    
-  width:0px;    
-  border-width:20rpx;    
-  border-style:solid;    
-  border-color:transparent #fff transparent transparent;    
+.left-triangle{
+  height:0px;
+  width:0px;
+  border-width:20rpx;
+  border-style:solid;
+  border-color:transparent #fff transparent transparent;
   margin-top: 20rpx;
-}  
-.right-triangle{  
-  height:0px;    
-  width:0px;    
-  border-width:20rpx;    
-  border-style:solid;    
-  border-color:transparent transparent transparent #80a1d5;    
+}
+.right-triangle{
+  height:0px;
+  width:0px;
+  border-width:20rpx;
+  border-style:solid;
+  border-color:transparent transparent transparent #3387FF;
   margin-top: 20rpx;
-}  
+}
 .video-triangle {
-  height:0px;    
-  width:0px;    
-  border-width:30rpx;    
-  border-style:solid;    
-  border-color:transparent transparent transparent #777;    
+  height:0px;
+  width:0px;
+  border-width:30rpx;
+  border-style:solid;
+  border-color:transparent transparent transparent #777;
   margin-top: 20rpx;
   margin-left: 30rpx;
 }
@@ -153,6 +157,9 @@
 .audio-wrapper .text {
   align-self:center;
   color:#000;
+}
+.self .audio-wrapper .text {
+  color:#fff;
 }
 /* 加载完成 */
 .history-load-done {

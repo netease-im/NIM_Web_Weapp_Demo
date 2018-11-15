@@ -61,7 +61,14 @@
   float: right;
   color: #ccc;
   margin-right: 20rpx;
+  white-space: nowrap;
   font-size: 28rpx;
+}
+.personcard-content-item-right.value {
+  overflow: hidden;
+  display: inline-block;
+  max-width: 450rpx;
+  text-overflow: ellipsis;
 }
 switch.personcard-content-item-right {
   margin-top: 8rpx;

@@ -18,7 +18,7 @@ let pageConfig = {
     isLongPress: false, // 录音按钮是否正在长按
     chatWrapperMaxHeight: 0,// 聊天界面最大高度
     chatTo: '', //聊天对象account
-    chatToLogo: '', // 聊天对象头像
+    chatType: '', //聊天类型 advanced 高级群聊 normal 讨论组群聊 p2p 点对点聊天
     loginAccountLogo: '',  // 登录账户对象头像
     focusFlag: false,//控制输入框失去焦点与否
     emojiFlag: false,//emoji键盘标志位
@@ -28,6 +28,7 @@ let pageConfig = {
     sendType: 0, //发送消息类型，0 文本 1 语音
     messageArr: [], //[{text, time, sendOrReceive: 'send', displayTimeHeader, nodes: []},{type: 'geo',geo: {lat,lng,title}}]
     inputValue: '',//文本框输入内容
+    from: ''
   },
   onUnload() {
     // 更新当前会话对象账户
@@ -44,8 +45,9 @@ let pageConfig = {
     // 初始化聊天对象
     let self = this
     let tempArr = []
-    let chatTo = options.chatTo 
-    let chatToLogo = ''
+    let chatTo = options.chatTo
+    let chatType = options.type || 'p2p'
+    let from = options.from || ''
     let loginAccountLogo = this.data.userInfo.avatar || this.data.defaultUserLogo
 
     // 设置顶部标题
@@ -53,17 +55,28 @@ let pageConfig = {
       wx.setNavigationBarTitle({
         title: '我的电脑',
       })
-      chatToLogo = loginAccountLogo
-    } else {
+    } else if (chatType === 'advanced' || chatType === 'normal') {
+      if (this.data.currentGroup.teamId === chatTo && this.data.currentGroup.isCurrentNotIn) {
+        showToast('error', '您已离开该群组')
+      }
+      let card = this.data.currentGroup || this.data.groupList[chatTo] || {}
+      let memberNum = card.memberNum || 0
+      let title = card.name || chatTo
       wx.setNavigationBarTitle({
-        title: this.data.friendCard[chatTo].nick || chatTo,
+        title: (title.length > 8 ? title.slice(0, 8) + '…' : title) + '（' + memberNum + '）',
       })
-      chatToLogo = this.data.friendCard[chatTo].avatar || this.data.defaultUserLogo
+      if (!this.data.groupMemberList[chatTo] || !this.data.groupMemberList[chatTo].allMembers) { // 当前群组的成员不全时获取成员列表 并 更新当前成员是否在群聊的标志
+        this.getMemberList(chatTo)
+      }
+    } else { // p2p
+      let card = this.data.friendCard[chatTo] || {}
+      wx.setNavigationBarTitle({
+        title: card.nick || chatTo,
+      })
     }
-
     this.setData({
       chatTo,
-      chatToLogo,
+      chatType,
       loginAccountLogo,
       iconBase64Map: iconBase64Map,
       chatWrapperMaxHeight,
@@ -72,6 +85,38 @@ let pageConfig = {
     self.reCalcAllMessageTime()
     // 滚动到底部
     self.scrollToBottom()
+  },
+  /**
+   * 生命周期函数--监听页面展示
+   */
+  onShow: function () {
+    let chatType = this.data.chatType
+    if (chatType === 'advanced' || chatType === 'normal') {
+      let card = this.data.currentGroup
+      let memberNum = card.memberNum || 0
+      let title = card.name
+      wx.setNavigationBarTitle({
+        title: (title.length > 8 ? title.slice(0, 8) + '…' : title) + '（' + memberNum + '）',
+      })
+    }
+  },
+  /**
+   * 获取群组成员列表
+   */
+  getMemberList(teamId) {
+    app.globalData.nim.getTeamMembers({
+      teamId: teamId,
+      done: (error, obj) => {
+        if (error) {
+          console.log(error, '获取群成员失败')
+          return
+        }
+        store.dispatch({
+          type: 'Get_Group_Members_And_Set_Current',
+          payload: obj
+        })
+      }
+    })
   },
   /**
    * 文本框输入事件
@@ -126,7 +171,7 @@ let pageConfig = {
   sendRequest(text) {
     let self = this
     app.globalData.nim.sendText({
-      scene: 'p2p',
+      scene: self.data.chatType === 'p2p' ? 'p2p' : 'team',
       to: this.data.chatTo,
       text,
       done: (err, msg) => {
@@ -171,7 +216,7 @@ let pageConfig = {
       }
     }
     app.globalData.nim.sendCustomMsg({
-      scene: 'p2p',
+      scene: self.data.chatType === 'p2p' ? 'p2p' : 'team',
       to: self.data.chatTo,
       content: JSON.stringify(content),
       done: function (err, msg) {
@@ -210,7 +255,7 @@ let pageConfig = {
       }
     }
     app.globalData.nim.sendCustomMsg({
-      scene: 'p2p',
+      scene: self.data.chatType === 'p2p' ? 'p2p' : 'team',
       to: self.data.chatTo,
       content: JSON.stringify(content),
       done: function (err, msg) {
@@ -233,7 +278,7 @@ let pageConfig = {
     let self = this
     if (self.data.tipInputValue.length !== 0) {
       app.globalData.nim.sendTipMsg({
-        scene: 'p2p',
+        scene: self.data.chatType === 'p2p' ? 'p2p' : 'team',
         to: self.data.chatTo,
         tip: self.data.tipInputValue,
         done: function (err, msg) {
@@ -248,7 +293,7 @@ let pageConfig = {
             tipInputValue: '',
             tipFlag: false
           })
-          
+
           // 滚动到底部
           self.scrollToBottom()
         }
@@ -268,7 +313,7 @@ let pageConfig = {
     let self = this
     // console.log(tempFilePath)
     app.globalData.nim.sendFile({
-      scene: 'p2p',
+      scene: self.data.chatType === 'p2p' ? 'p2p' : 'team',
       to: self.data.chatTo,
       type: 'audio',
       wxFilePath: tempFilePath,
@@ -293,7 +338,7 @@ let pageConfig = {
     let self = this
     let { address, latitude, longitude } = res
     app.globalData.nim.sendGeo({
-      scene: 'p2p',
+      scene: self.data.chatType === 'p2p' ? 'p2p' : 'team',
       to: self.data.chatTo,
       geo: {
         lng: longitude,
@@ -326,7 +371,7 @@ let pageConfig = {
     // 上传文件到nos
     app.globalData.nim.sendFile({
       type: 'video',
-      scene: 'p2p',
+      scene: self.data.chatType === 'p2p' ? 'p2p' : 'team',
       to: self.data.chatTo,
       wxFilePath: tempFilePath,
       done: function (err, msg) {
@@ -358,7 +403,7 @@ let pageConfig = {
       app.globalData.nim.sendFile({
         // app.globalData.nim.previewFile({
         type: 'image',
-        scene: 'p2p',
+        scene: self.data.chatType === 'p2p' ? 'p2p' : 'team',
         to: self.data.chatTo,
         wxFilePath: tempFilePaths[i],
         done: function (err, msg) {
@@ -406,7 +451,7 @@ let pageConfig = {
   saveChatMessageListToStore(rawMsg, handledMsg) {
     store.dispatch({
       type: 'RawMessageList_Add_Msg',
-      payload: rawMsg
+      payload: { msg: rawMsg }
     })
   },
   /**
@@ -459,11 +504,10 @@ let pageConfig = {
    * 播放音频
    */
   playAudio(e) {
-    showToast('text', '', {
+    showToast('text', '播放中', {
       duration: 120 * 1000,
       mask: true
     })
-
     let audio = e.currentTarget.dataset.audio
     const audioContext = wx.createInnerAudioContext()
     if (audio.ext === 'mp3') { // 小程序发送的
@@ -767,6 +811,11 @@ let pageConfig = {
           wx.chooseVideo({
             sourceType: ['camera', 'album'],
             success: function (res) {
+              if (res.duration > 60) {
+                showToast('text', '视频时长超过60s，请重新选择')
+                return
+              }
+              console.log(res);
               // {duration,errMsg,height,size,tempFilePath,width}
               self.sendVideoToNos(res)
             }
@@ -845,48 +894,98 @@ let pageConfig = {
   /**
    * 切换到对方介绍页
    */
-  switchPersonCard() {
-    let account = this.data.chatTo
-    // 重定向进入account介绍页
-    clickLogoJumpToCard(account, false)
+  switchPersonCard(data) {
+    if (this.data.chatType === 'p2p') {
+      // 重定向进入account介绍页
+      clickLogoJumpToCard(this.data.chatTo, false)
+    } else {
+      wx.navigateTo({
+        url: '../../partials/advancedGroupMemberCard/advancedGroupMemberCard?account=' + data.target.dataset.account + '&teamId=' + this.data.chatTo
+      })
+    }   
   },
   /**
-   * 查看云端历史消息
+   * 查看云端历史消息、查看群信息、查看讨论组信息
    */
-  lookHistoryMessage() {
+  lookMessage() {
     let self = this
+    let actionArr = ['清空本地聊天记录', '查看云消息记录']
+    let actionFn = [self.sureToClearAllMessage, self.lookAllMessage]
+    if (this.data.currentGroup.isCurrentNotIn) {
+      actionArr.pop()
+    }
+    if (self.data.chatType === 'advanced') {
+      actionArr.unshift('群信息')
+      actionFn.unshift(self.lookAdvancedGroupInfo)
+    } else if (self.data.chatType === 'normal') {
+      actionArr.unshift('讨论组信息')
+      actionFn.unshift(self.lookNormalGroupInfo)
+    }
     wx.showActionSheet({
-      itemList: ['清空本地聊天记录', '查看云消息记录'],
+      itemList: actionArr,
       success: (res) => {
-        if (res.tapIndex == 0) {//清空本地聊天记录
-          wx.showActionSheet({//二次确认
-            itemList: ['清空'],
-            itemColor: '#f00',
-            success: (res) => {
-              if (res.tapIndex == 0) {
-                self.clearAllMessage()
-              }
-            }
-          })
-        } else if (res.tapIndex == 1) {//查看云消息记录
-          wx.navigateTo({
-            url: `../historyFromCloud/historyFromCloud?account=${self.data.chatTo}&chatToLogo=${encodeURIComponent(self.data.chatToLogo)}`,
-          })
+        (actionFn[res.tapIndex])()
+      }
+    })
+  },
+  /**
+   * 查看群信息
+   */
+  lookAdvancedGroupInfo() {
+    store.dispatch({
+      type: 'Set_Current_Group_And_Members',
+      payload: this.data.chatTo
+    })
+    wx.navigateTo({
+      url: `../advancedGroupCard/advancedGroupCard?teamId=${this.data.chatTo}&from=${this.data.from}`,
+    })
+  },
+  /**
+   * 查看讨论组信息
+   */
+  lookNormalGroupInfo() {
+    store.dispatch({
+      type: 'Set_Current_Group_And_Members',
+      payload: this.data.chatTo
+    })
+    wx.navigateTo({
+      url: `../normalGroupCard/normalGroupCard?teamId=${this.data.chatTo}&from=${this.data.from}`,
+    })
+  },
+  /**
+   * 弹框 确认 清除本地记录
+   */
+  sureToClearAllMessage() {
+    let self = this
+    wx.showActionSheet({//二次确认
+      itemList: ['清空'],
+      itemColor: '#f00',
+      success: (res) => {
+        if (res.tapIndex == 0) {
+          self.clearAllMessage()
         }
       }
+    })
+  },
+  /**
+   * 查看云消息记录
+   */
+  lookAllMessage() {
+    wx.navigateTo({
+      url: `../historyFromCloud/historyFromCloud?account=${this.data.chatTo}&chatType=${this.data.chatType}`,
     })
   },
   /**
    * 清除本地记录
    */
   clearAllMessage() {
-    // 刷新本地视图
+      // 刷新本地视图
     this.setData({
       messageArr: []
     })
     store.dispatch({
       type: 'Delete_All_MessageByAccount',
-      payload: this.data.chatTo
+      payload: (this.data.chatType === 'p2p' ? 'p2p-' : 'team-') + this.data.chatTo
     })
   },
   /**
@@ -899,7 +998,8 @@ let pageConfig = {
     }
     let paraObj = {
       time: message.time,
-      chatTo: this.data.chatTo
+      chatTo: this.data.chatTo,
+      chatType: this.data.chatType
     }
     let self = this
     if (message.sendOrReceive === 'send') { // 自己消息
@@ -953,7 +1053,7 @@ let pageConfig = {
   forwardMessage(paramObj) {
     let str = encodeURIComponent(JSON.stringify(paramObj))
     wx.redirectTo({
-      url: '../forwardcontact/forwardcontact?data=' + str,
+      url: '../forwardContact/forwardContact?data=' + str,
     })
   },
   /**
@@ -961,8 +1061,8 @@ let pageConfig = {
    */
   recallMessage(message) {
     let self = this
-    let to = self.data.chatTo
-    let rawMessage = self.data.rawMessageList[to][message.time]
+    let sessionId = (self.data.chatType === 'p2p' ? 'p2p-' : 'team-') + self.data.chatTo
+    let rawMessage = self.data.rawMessageList[sessionId][message.time]
 
     app.globalData.nim.deleteMsg({
       msg: rawMessage,
@@ -987,10 +1087,11 @@ let pageConfig = {
    * {displayTimeHeader,nodes,sendOrReceive,text,time,type}
    */
   deleteMessageRecord(msg) {
+    let sessionId = (this.data.chatType === 'p2p' ? 'p2p-' : 'team-') + this.data.chatTo
     // 从全局记录中删除
     store.dispatch({
       type: 'Delete_Single_MessageByAccount',
-      payload: { account: this.data.chatTo, time: msg.time }
+      payload: { sessionId: sessionId, time: msg.time }
     })
   },
   /**
@@ -1012,7 +1113,7 @@ let pageConfig = {
   /**
    * 原始消息列表转化为适用于渲染的消息列表
    * {unixtime1: {flow,from,fromNick,idServer,scene,sessionId,text,target,to,time...}, unixtime2: {}}
-   * => 
+   * =>
    * [{text, time, sendOrReceive: 'send', displayTimeHeader, nodes: []},{type: 'geo',geo: {lat,lng,title}}]
    */
   convertRawMessageListToRenderMessageArr(rawMsgList) {
@@ -1106,11 +1207,29 @@ let pageConfig = {
           }
           break
         }
+        case 'custom':
+          specifiedObject = {
+            nodes: [{
+              type: 'text',
+              text: '自定义消息'
+            }]
+          }
+          break;
+        case 'notification':
+          specifiedObject = {
+            text: rawMsg.groupNotification,
+            nodes: [{
+              type: 'text',
+              text: rawMsg.groupNotification
+            }]
+          }
+          break;
         default: {
           break
         }
       }
       messageArr.push(Object.assign({}, {
+        from: rawMsg.from,
         type: msgType,
         text: rawMsg.text || '',
         time,
@@ -1123,11 +1242,15 @@ let pageConfig = {
 }
 
 let mapStateToData = (state) => {
-  let account = state.currentChatTo
-  let messageArr = pageConfig.convertRawMessageListToRenderMessageArr(state.rawMessageList[account])
+  let sessionId = state.currentChatTo
+  let messageArr = pageConfig.convertRawMessageListToRenderMessageArr(state.rawMessageList[sessionId])
   return {
     friendCard: state.friendCard,
+    personList: state.personList,
     userInfo: state.userInfo,
+    currentGroup: state.currentGroup,
+    groupList: state.groupList,
+    groupMemberList: state.groupMemberList,
     rawMessageList: state.rawMessageList,
     messageArr: messageArr
   }

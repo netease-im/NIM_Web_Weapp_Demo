@@ -1,6 +1,6 @@
 .recentchat-wrapper {
   width: 100%;
-  padding: 0 20rpx; 
+  padding: 0 22rpx;
   box-sizing:border-box;
   background-color: #fff;
   min-height: 100%;
@@ -33,15 +33,15 @@
 /* 循环列表条目样式 */
 .recentchat-item {
   width:100%;
-  height:128rpx;
+  height:132rpx;
   padding:20rpx 28rpx 20rpx 0;
   box-sizing:border-box;
   display:flex;
   border-bottom: 1px solid rgba(220,220,220,0.5);
 }
 .recentchat-item-img {
-  width: 88rpx;
-  height: 88rpx;
+  width: 100rpx;
+  height: 100rpx;
   margin-right: 24rpx;
   box-sizing: border-box;
   display: flex;
@@ -57,6 +57,7 @@
 .recentchat-item-right .recentchat-item-message {
   font-size: 28rpx;
   color: #ccc;
+  word-break:break-all;
 }
 .recentchat-item-top {
   align-self:flex-start;
@@ -66,6 +67,7 @@
   width:100%;
   height:44rpx;
   line-height:44rpx;
+  font-size: 36rpx;
 }
 .recentchat-item-bottom {
   display:flex;
@@ -73,30 +75,37 @@
   justify-content:space-between;
   /* align-self: flex-start; */
   font-size: 28rpx;
-  color: #ccc;
+  color: #9B9B9B;
   height:44rpx;
   line-height:44rpx;
 }
 .recentchat-item-bottom .recentchat-item-desc {
-  max-width: 400rpx;  
-  overflow: hidden; 
-  white-space: nowrap; 
-  text-overflow: ellipsis;
+  max-width: 400rpx;
+  overflow: hidden;
   display: inline-block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .recentchat-item-bottom .recentchat-item-unread {
-  background-color:red;
-  border-radius:100%;
-  width:40rpx;
+  background: #F43530;
+  border-radius: 18rpx;
+  width:52rpx;
+  height: 36rpx;
+  line-height: 36rpx;
   text-align:center;
+  font-size: 22rpx;
   color:#fff;
 }
 .recentchat-item-top .recentchat-item-title {
+  overflow: hidden;
+  max-width: 330rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 32rpx;
 }
 .recentchat-item-top .recentchat-item-time {
-  font-size: 28rpx;
-  color: #ccc;
+  font-size: 24rpx;
+  color: #9B9B9B;
 }
 /* 删除按钮样式 */
 .swipedelete-btn {

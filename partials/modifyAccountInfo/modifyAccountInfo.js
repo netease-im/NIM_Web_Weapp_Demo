@@ -4,7 +4,7 @@ import { iconRightArrow } from '../../utils/imageBase64.js'
 import { validStringType } from '../../utils/util.js'
 
 let app = getApp()
-let store = app.store 
+let store = app.store
 let loginUser = app.globalData.loginUser
 
 const navigationBarTitle = {
@@ -38,12 +38,12 @@ let pageConfig = {
     })
     this.setData({
       type,
-      sign: this.data.userInfo.sign
+      sign: this.data.userInfo.sign || ''
     })
     // 初始化默认性别
     if (type === 'gender') {
       this.setData({
-        gender: this.data.userInfo.gender
+        gender: this.data.userInfo.gender || ''
       })
     }
   },
@@ -83,20 +83,28 @@ let pageConfig = {
    * 性别变化
    */
   genderChange(e) {
+    let self = this
     let gender = e.currentTarget.dataset.gender
-    this.setData({ gender })
+    self.setData({ gender })
     // 全局存储
-    if (this.data.type == 'gender' && this.data.gender != this.data.userInfo.gender) {
+    if (self.data.type == 'gender' && self.data.gender != self.data.userInfo.gender) {
       // 更新服务器数据
       app.globalData.nim.updateMyInfo({
-        gender: this.data.gender
-      })
-      // 更新本地数据
-      store.dispatch({
-        type: 'UserInfo_Update_Gender'
+        gender: self.data.gender,
+        done: (error, obj) => {
+          if (error) {
+            showToast('error', '修改失败')
+            return
+          }
+          // 更新本地数据
+          store.dispatch({
+            type: 'UserInfo_Update_Gender',
+            payload: self.data.gender
+          })
+          wx.navigateBack({})
+        }
       })
     }
-    wx.navigateBack({})
   },
   /**
    * 统一提交保存

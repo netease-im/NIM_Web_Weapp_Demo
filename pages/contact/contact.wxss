@@ -1,15 +1,13 @@
 .contact-add-button {
   width: 89%;
   font-size:32rpx;
-  position:fixed;
-  left:5%;
-  top:20rpx;
-  z-index: 10;
+  margin-top: 20rpx;
+  background-color: #fff;
 }
 .contact-content-wrapper {
   width: 100%;
-  padding-top:120rpx;
-  box-sizing:border-box;  
+  padding-top: 20rpx;
+  box-sizing:border-box;
   overflow:hidden;
 }
 /*消息通知、黑名单、我的电脑  */
@@ -19,6 +17,7 @@
 .contact-header-item {
   height: 120rpx;
   display:flex;
+  position: relative;
   border-bottom:1px solid rgba(220,220,220,0.5);
   background-color:#fff;
 }
@@ -43,19 +42,20 @@
 /*分类表头  */
 .contact-catagory-header {
   width: 100%;
-  padding-left: 20rpx;
-  font-size: 32rpx;
-  color: #aaa;
-  margin-top: 20rpx;
+  height: 46rpx;
+  line-height: 46rpx;
+  padding-left: 30rpx;
+  font-size: 28rpx;
+  color: #959595;
 }
 /*好友列表 */
 .contact-friend-wrapper {
-  margin-top: 20rpx;
   padding-bottom:20rpx;
 }
 .contact-firend-item {
-  height: 100rpx;
   display: flex;
+  height: 112rpx;
+  line-height: 112rpx;
   background-color:#fff;
   border-bottom:1px solid rgba(220,220,220,0.5);
 }
@@ -75,7 +75,7 @@
 .contact-item-hover {
   background-color: #eee;
 }
-.gray { 
-  filter: grayscale(100%); 
+.gray {
+  filter: grayscale(100%);
   /* filter: gray; */
 }

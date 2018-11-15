@@ -1,11 +1,15 @@
 import IMController from '../../controller/im.js'
 import { connect } from '../../redux/index.js'
-import { sortStringArray, deepClone, showToast } from '../../utils/util.js'
+import { sortStringArray, deepClone, showToast, getFormatFriendList } from '../../utils/util.js'
 import { getPinyin } from '../../utils/pinyin.js'
 import { iconMyComputer, iconRightArrow } from '../../utils/imageBase64.js'
 
 let app = getApp()
 let store = app.store
+/**
+ * todo：
+ * 登录状态消息更新未做，现有逻辑是初始化时获取状态信息，然后设置全局对象（一旦未能在切换前拿到数据那么全部就是出于离线状态），切到通信录页时获取数据渲染，后面考虑采用消息订阅模式完成状态信息同步
+ */
 let self = this
 let pageConfig = {
   /**
@@ -37,65 +41,11 @@ let pageConfig = {
       iconMyComputer,
       iconRightArrow
     })
-    // 渲染本地列表 
+    // 渲染本地列表
     this.showFriendList(this.data.friendCard)
   },
   showFriendList(friendCard) {
-    let self = this
-
-    let friendCardMap = friendCard // key为account，value为该人信息
-    let accountArr = Object.keys(friendCardMap) // accounts数组
-    let accountMapNick = {} // 存储account映射nickPinyin，方便依据account查找friendCata
-    let orderedFriendsCard = [] // 渲染列表常用数据，[{nick: 'test', account: 'nihwo', avatar: 'path', isBlack}]
-    // 循环遍历
-    accountArr.map(account => {
-      let card = friendCardMap[account]
-      // 没有account说明是非好友情况下拉黑
-      if (!card.account || card.isFriend == false) {
-        return
-      }
-
-      let nickPinyin = getPinyin(card.nick, '').toUpperCase()
-
-      let renderCard = {
-        'avatar': card.avatar || app.globalData.PAGE_CONFIG.defaultUserLogo,
-        'account': card.account,
-        'nick': card.nick,
-        'nickPinyin': nickPinyin,
-        'status': card.status,
-        'isBlack': card.isBlack || false
-      }
-      // 存储account映射nickPinyin，方便依据account查找friendCata
-      accountMapNick[card.account] = nickPinyin
-      //刷新视图对象
-      orderedFriendsCard.push(renderCard)
-    })
-    // 排序
-    let newOrder = orderedFriendsCard.sort((a, b) => {
-      return a.nickPinyin.localeCompare(b.nickPinyin)
-    })
-    // 数据分类 
-    let result = {}
-    newOrder.map((item, index) => {
-      let firstLetter = item.nickPinyin[0]
-      if (!self.testLetter(firstLetter)) { // 非字母
-        firstLetter = '#'
-      }
-      if (!result[firstLetter]) {
-        result[firstLetter] = []
-      }
-      result[firstLetter].push(item)
-    })
-
-    // 将#类放置最后
-    let tempKeys = Object.keys(result)
-    if (tempKeys[0] == '#') {
-      tempKeys.push(tempKeys.shift())
-    }
-    return {
-      friendCata: result,
-      cataHeader: tempKeys
-    }
+    return getFormatFriendList(friendCard, app.globalData.PAGE_CONFIG.defaultUserLogo)
   },
   /**
    * 单击用户条目
@@ -108,15 +58,35 @@ let pageConfig = {
     // 更新会话对象
     store.dispatch({
       type: 'CurrentChatTo_Change',
-      payload: account
+      payload: 'p2p-' + account
     })
   },
   /**
    * 添加好友：点击回调
    */
   addFriendHandler() {
-    wx.navigateTo({
-      url: '../../partials/addfriend/addfriend'
+    let self = this
+    wx.showActionSheet({
+      itemList: ['添加好友', '创建高级群', '创建讨论组', '搜索高级群'],
+      success: (res) => {
+        if (res.tapIndex == 0) { // 添加好友
+          wx.navigateTo({
+            url: '../../partials/addFriendOrGroup/addFriendOrGroup?type=friend'
+          })
+        } else if (res.tapIndex == 1) { // 创建高级群
+          wx.navigateTo({
+            url: '../../partials/chooseContact/chooseContact?type=advanced&action=create'
+          })
+        } else if (res.tapIndex == 2) { // 创建讨论组
+          wx.navigateTo({
+            url: '../../partials/chooseContact/chooseContact?type=normal&action=create'
+          })
+        } else if (res.tapIndex == 3) { // 搜索高级群
+          wx.navigateTo({
+            url: '../../partials/addFriendOrGroup/addFriendOrGroup?type=group'
+          })
+        }
+      }
     })
   },
   /**
@@ -166,7 +136,7 @@ let pageConfig = {
     }
 
     if (cataHeader.indexOf(header) === -1) { // 新类别，不包含此类
-      // 添加类别 
+      // 添加类别
       cataHeader.push(header)
       cataHeader.sort()
       // 将#类放置最后
@@ -221,11 +191,19 @@ let pageConfig = {
     })
   },
   /**
-   * 单击消息通知 
+   * 单击消息通知
    */
   switchToMessageNotification() {
     wx.navigateTo({
       url: '../../partials/messageNotification/messageNotification',
+    })
+  },
+  /**
+   * 单击高级群/讨论组
+   */
+  switchToGroupListHandler(e) {
+    wx.navigateTo({
+      url: '../../partials/groupList/groupList?type=' + e.currentTarget.dataset.type,
     })
   },
   /**
@@ -241,8 +219,13 @@ let pageConfig = {
    */
   switchToChating() {
     let account = this.data.userInfo.account
+    // 更新会话对象
+    store.dispatch({
+      type: 'CurrentChatTo_Change',
+      payload: 'p2p-' + account
+    })
     wx.navigateTo({
-      url: '../../partials/chating/chating?chatTo=' + account,
+      url: '../../partials/chating/chating?chatTo=' + account + '&type=p2p',
     })
   }
 }

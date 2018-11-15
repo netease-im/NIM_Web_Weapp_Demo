@@ -43,6 +43,20 @@ let pageConfig = {
               type: 'FriendCard_Add_Friend',
               payload: user
             })
+            // 订阅后只有在订阅账号登录状态变化后才会收到推送事件
+            app.globalData.nim.subscribeEvent({
+              type: 1, // 订阅用户登录状态事件
+              accounts: new Array(account),
+              subscribeTime: 3600 * 24 * 30,
+              sync: true,
+              done: function(err, obj) {
+                if(err) {
+                  console.log(err)
+                  return
+                }
+                console.log(obj) // {failedAccounts: Array(0)}
+              }
+            })
             wx.switchTab({
               url: '../../pages/contact/contact'
             })
