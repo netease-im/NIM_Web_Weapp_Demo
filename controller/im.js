@@ -56,6 +56,8 @@ export default class IMController {
       // 会话
       onsessions: this.onSessions,
       onupdatesession: this.onUpdateSession,
+      // 私有化部署
+      privateConf: app.globalData.openPrivateConf ? app.globalData.openPrivateConf : '',
       // 消息
       onroamingmsgs: this.onRoamingMsgs,
       onofflinemsgs: this.onOfflineMsgs,
