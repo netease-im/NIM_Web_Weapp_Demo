@@ -196,7 +196,6 @@ function onAddTeamMembers(msg, msgKey, tempState) { // team, accounts, members
     tempState.currentGroup = tempState.groupList[obj.teamId]
     tempState.currentGroupMembers = list // 更新成员列表
   }
-  console.log(tempState)
 }
 // 移除了成员
 // 更新更新 groupList groupMemberList groupMemberMap currentGroup currentGroupMembers ；

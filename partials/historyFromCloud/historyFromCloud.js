@@ -270,10 +270,10 @@ let pageConfig = {
         }
         case 'notification':
           specifiedObject = {
-            text: rawMsg.groupNotification,
+            text: rawMsg.groupNotification || (rawMsg.text.length == 0 ? '通知' : rawMsg.text),
             nodes: [{
               type: 'text',
-              text: rawMsg.groupNotification
+              text: rawMsg.groupNotification || (rawMsg.text.length == 0 ? '通知' : rawMsg.text)
             }]
           }
           break;

@@ -862,6 +862,25 @@ let pageConfig = {
     })
   },
   /**
+   * 视频通话
+   */
+  videoCall() {
+    if (this.data.chatType === 'advanced' || this.data.chatType === 'normal') { // 群组
+      if (this.data.currentGroup.memberNum.length < 2) {
+        showToast('text', '无法发起，人数少于2人')
+      } else {
+        wx.navigateTo({
+          url: `../forwardMultiContact/forwardMultiContact?teamId=${this.data.currentGroup.teamId}`,
+        })
+      }
+    } else { // p2p
+      console.log(`正在发起对${this.data.chatTo}的视频通话`)
+      wx.navigateTo({
+        url: `../videoCall/videoCall?callee=${this.data.chatTo}`,
+      })
+    }
+  },
+  /**
    * 调用系统地图界面
    */
   callSysMap() {
@@ -896,9 +915,12 @@ let pageConfig = {
    */
   switchPersonCard(data) {
     if (this.data.chatType === 'p2p') {
+      if (this.data.chatTo === this.data.userInfo.account || this.data.chatTo === 'ai-assistant') {
+        return
+      }
       // 重定向进入account介绍页
-      clickLogoJumpToCard(this.data.chatTo, false)
-    } else {
+      clickLogoJumpToCard(this.data.friendCard, this.data.chatTo, false)
+    } else if (this.data.chatType === 'advanced') {
       wx.navigateTo({
         url: '../../partials/advancedGroupMemberCard/advancedGroupMemberCard?account=' + data.target.dataset.account + '&teamId=' + this.data.chatTo
       })
@@ -1217,10 +1239,11 @@ let pageConfig = {
           break;
         case 'notification':
           specifiedObject = {
-            text: rawMsg.groupNotification,
+            // netbill的text为空
+            text: rawMsg.groupNotification || (rawMsg.text.length == 0 ? '通知' : rawMsg.text),
             nodes: [{
               type: 'text',
-              text: rawMsg.groupNotification
+              text: rawMsg.groupNotification || (rawMsg.text.length == 0 ? '通知' : rawMsg.text)
             }]
           }
           break;

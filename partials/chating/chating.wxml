@@ -43,10 +43,10 @@
           <image src='{{iconBase64Map.iconVoiceWhite}}' class='image'></image>
           <text class='text'>{{message.audio.dur / 1000 << 1 >> 1}}''</text>
         </view>
-        <rich-text nodes="{{message.nodes}}" wx:if="{{message.type === 'image'}}" class='record-chatting-item-text nobg'>{{message.text}}</rich-text>
-        <rich-text nodes="{{message.nodes}}" wx:if="{{message.type === '猜拳' || message.type === '贴图表情'}}" class='record-chatting-item-text nobg' >{{message.text}}</rich-text>
-        <rich-text nodes="{{message.nodes}}" wx:if="{{message.type === 'text' || message.type === 'file' || message.type === '白板消息' || message.type === '阅后即焚' || message.type === 'robot'}}" class='record-chatting-item-text'>{{message.text}}</rich-text>
-        <rich-text nodes="{{message.nodes}}" wx:if="{{message.type === 'tip' || message.type === 'notification'}}" class='tip-rich-text'>{{message.text}}</rich-text>
+        <rich-text wx:if="{{message.type === 'image'}}" class='record-chatting-item-text nobg' nodes="{{message.nodes}}" ></rich-text>
+        <rich-text wx:if="{{message.type === '猜拳' || message.type === '贴图表情'}}" class='record-chatting-item-text nobg' nodes="{{message.nodes}}" ></rich-text>
+        <rich-text wx:if="{{message.type === 'text' || message.type === 'file' || message.type === '白板消息' || message.type === '阅后即焚' || message.type === 'robot'}}" class='record-chatting-item-text' nodes="{{message.nodes}}"></rich-text>        
+        <rich-text wx:if="{{message.type === 'tip' || message.type === 'notification'}}" class='tip-rich-text' nodes="{{message.nodes}}"></rich-text>
         <text wx:if="{{message.type !== 'tip' && message.type !== 'notification' && message.type !== 'image' && message.type !== 'video' && message.type !== 'geo' && message.type !== '猜拳' && message.type !== '贴图表情' }}" class='right-triangle'></text>
         <image wx:if="{{message.type !== 'tip' && message.type !== 'notification'}}" src='{{loginAccountLogo}}' catchtap='switchToMyTab' class='record-chatting-item-img'></image>
       </view>
@@ -65,10 +65,10 @@
           <image src='{{iconBase64Map.iconVoiceGrey}}' class='image'></image>
           <text class='text' style='color:#000;'>{{message.audio.dur / 1000 << 1 >> 1}}''</text>
         </view>
-        <rich-text nodes="{{message.nodes}}" wx:if="{{message.type === 'image'}}" class='record-chatting-item-text nobg' >{{message.text}}</rich-text>
-        <rich-text nodes="{{message.nodes}}" wx:if="{{message.type === '猜拳' || message.type === '贴图表情'}}" class='record-chatting-item-text nobg' >{{message.text}}</rich-text>
-        <rich-text nodes="{{message.nodes}}" wx:if="{{message.type === 'text' || message.type === 'file' || message.type === '白板消息' || message.type === '阅后即焚' || message.type === 'robot'|| message.type === 'custom'}}" class='record-chatting-item-text' style='color:#000;background-color:#fff;'>{{message.text}}</rich-text>
-        <rich-text nodes="{{message.nodes}}" wx:if="{{message.type === 'tip' || message.type === 'notification'}}" class='tip-rich-text'>{{message.text}}</rich-text>
+        <rich-text wx:if="{{message.type === 'image'}}" class='record-chatting-item-text nobg' nodes="{{message.nodes}}"></rich-text>
+        <rich-text wx:if="{{message.type === '猜拳' || message.type === '贴图表情'}}" class='record-chatting-item-text nobg' nodes="{{message.nodes}}"></rich-text>
+        <rich-text wx:if="{{message.type === 'text' || message.type === 'file' || message.type === '白板消息' || message.type === '阅后即焚' || message.type === 'robot'|| message.type === 'custom'}}" class='record-chatting-item-text' style='color:#000;background-color:#fff;'  nodes="{{message.nodes}}"></rich-text>
+        <rich-text wx:if="{{message.type === 'tip' || message.type === 'notification'}}" class='tip-rich-text' nodes="{{message.nodes}}"></rich-text>
       </view>
     </view>
    </view>
@@ -104,12 +104,18 @@
         </view>
         <view class='more-subcontent-item' catchtap='sendFingerGuess'>
           <image src="../../images/morra.png" class='image'></image>
-          <text class='text'>猜拳</text></view>
+          <text class='text'>猜拳</text>
+        </view>
       </view>
       <view style='display:flex;justify-content: space-between;'>
         <view class='more-subcontent-item' catchtap='choosePosition'>
           <image src="../../images/location.png" class='image'></image>
-          <text class='text'>位置</text></view>
+          <text class='text'>位置</text>
+        </view>
+        <view class='more-subcontent-item' catchtap='videoCall'>
+          <image src="../../images/location.png" class='image'></image>
+          <text class='text'>视频通话</text>
+        </view>
         <view class='more-subcontent-item'><view class='image' style='background-color: transparent;'></view><text class='text'></text></view>
         <view class='more-subcontent-item'><view class='image' style='background-color: transparent;'></view><text class='text'></text></view>
       </view>
