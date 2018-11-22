@@ -430,15 +430,13 @@ function generateImageNode(file) {
 }
 /**
  * 单击用户头像，查询并跳转到指定页面
- * account: 账户, isPush: 新页面是跳转方式，true为压栈，false为重定向
+ * friendsCard: 好友名片map；
+ * account: 账户，用于判断是否是好友，跳转指定页面；
+ * isPush: 新页面是跳转方式，true为压栈，false为重定向
  */
-function clickLogoJumpToCard(account, isPush) {
+function clickLogoJumpToCard(friendsCard, account, isPush) {
   let app = getApp()
-  let isFriend = true
-  let friendsAccountArr = []
-  app.globalData.friends.map(friend => {
-    friendsAccountArr.push(friend.account)
-  })
+  let friendsAccountArr = Object.keys(friendsCard)
   if (friendsAccountArr.indexOf(account) !== -1) {
     if (isPush === true) {
       wx.navigateTo({
@@ -884,6 +882,73 @@ function calculateP2PPosition(newUserList, oldUserList, config) {
   }
   return resultUserList
 }
+
+function dealMsg(msg, store, app) {
+  let account = msg.from
+  if (msg.type === 'deleteMsg') {
+    store.dispatch({
+      type: 'RawMessageList_OppositeRecall_Msg',
+      payload: msg
+    })
+  } else if (msg.type === 'addFriend') { //第三方将自己加到好友列表
+    app.globalData.nim.subscribeEvent({
+      type: 1, // 订阅用户登录状态事件
+      accounts: [account],
+      sync: true,
+      done: function (err, obj) {
+        console.log(err, obj)
+      }
+    })
+    app.globalData.nim.getUser({
+      account: account,
+      done: function (err, user) {
+        if (err) {
+          console.log('onSysMsg: getUser: ', err)
+          return
+        }
+        store.dispatch({
+          type: 'Notification_Opposite_AddFriend',
+          payload: {
+            msg,
+            desc: `添加好友-${msg.from}添加你为好友`
+          }
+        })
+        store.dispatch({
+          type: 'FriendCard_Add_Friend',
+          payload: user
+        })
+      }
+    })
+  } else if (msg.type === 'deleteFriend') {
+    store.dispatch({
+      type: 'Notification_Opposite_DeleteFriend',
+      payload: {
+        msg,
+        desc: `删除好友-${msg.from}已将你从他的好友列表中移除`
+      }
+    })
+    store.dispatch({
+      type: 'FriendCard_Delete_By_Account',
+      payload: account
+    })
+  } else if (msg.type === 'teamInvite') { // category:"team"
+    store.dispatch({
+      type: 'Notification_Team_Invite',
+      payload: {
+        msg,
+        desc: `${msg.from}邀请你入群“${msg.attach.team.name}”`
+      }
+    })
+  } else if (msg.type === 'applyTeam') { // category:"team"
+    store.dispatch({
+      type: 'Notification_Team_Apply',
+      payload: {
+        msg,
+        desc: `${msg.from}申请加入`
+      }
+    })
+  }
+}
 module.exports = {
   calculateMeetingPosition,
   calculateP2PPosition,
@@ -905,5 +970,6 @@ module.exports = {
   generateFingerGuessImageFile,
   generateBigEmojiImageFile,
   generateImageNode,
-  getFormatFriendList
+  getFormatFriendList,
+  dealMsg
 }

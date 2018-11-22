@@ -1,7 +1,7 @@
 import MD5 from '../vendors/md5.js'
 import NIM from '../vendors/NIM_Web_NIM_weixin_v5.8.0.js'
 import NetcallController from './netcall.js'
-import { updateMultiPortStatus, deepClone } from '../utils/util.js'
+import { updateMultiPortStatus, deepClone, dealMsg } from '../utils/util.js'
 
 let app = getApp()
 let store = app.store
@@ -24,6 +24,8 @@ export default class IMController {
       onwillreconnect: this.onWillReconnect,
       ondisconnect: this.onDisconnect,
       onerror: this.onError,
+      // 私有化配置文件
+      privateConf: app.globalData.openPrivateConf ? app.globalData.openPrivateConf : '',
       // 同步完成
       onsyncdone: this.onSyncDone,
       // 用户关系
@@ -56,8 +58,6 @@ export default class IMController {
       // 会话
       onsessions: this.onSessions,
       onupdatesession: this.onUpdateSession,
-      // 私有化部署
-      privateConf: app.globalData.openPrivateConf ? app.globalData.openPrivateConf : '',
       // 消息
       onroamingmsgs: this.onRoamingMsgs,
       onofflinemsgs: this.onOfflineMsgs,
@@ -227,70 +227,7 @@ export default class IMController {
    */
   onSysMsg(msg) {
     console.log('onSysMsg: ', msg)
-    let account = msg.from
-    if (msg.type === 'deleteMsg') {
-      store.dispatch({
-        type: 'RawMessageList_OppositeRecall_Msg',
-        payload: msg
-      })
-    } else if (msg.type === 'addFriend') { //第三方将自己加到好友列表
-      app.globalData.nim.subscribeEvent({
-        type: 1, // 订阅用户登录状态事件
-        accounts: [account],
-        sync: true,
-        done: function (err, obj) {
-          console.log(err, obj)
-        }
-      })
-      app.globalData.nim.getUser({
-        account: account,
-        done: function (err, user) {
-          if (err) {
-            console.log('onSysMsg: getUser: ', err)
-            return
-          }
-          store.dispatch({
-            type: 'Notification_Opposite_AddFriend',
-            payload: {
-              msg,
-              desc: `添加好友-${msg.from}添加你为好友`
-            }
-          })
-          store.dispatch({
-            type: 'FriendCard_Add_Friend',
-            payload: user
-          })
-        }
-      })
-    } else if (msg.type === 'deleteFriend') {
-      store.dispatch({
-        type: 'Notification_Opposite_DeleteFriend',
-        payload: {
-          msg,
-          desc: `删除好友-${msg.from}已将你从他的好友列表中移除`
-        }
-      })
-      store.dispatch({
-        type: 'FriendCard_Delete_By_Account',
-        payload: account
-      })
-    } else if (msg.type === 'teamInvite') { // category:"team"
-      store.dispatch({
-        type: 'Notification_Team_Invite',
-        payload: {
-          msg,
-          desc: `${msg.from}邀请你入群“${msg.attach.team.name}”`
-        }
-      })
-    } else if (msg.type === 'applyTeam') { // category:"team"
-      store.dispatch({
-        type: 'Notification_Team_Apply',
-        payload: {
-          msg,
-          desc: `${msg.from}申请加入`
-        }
-      })
-    }
+    dealMsg(msg, store, app)
   }
   /**
    * 丢失连接
@@ -533,6 +470,7 @@ export default class IMController {
   shouldCountNotifyUnread(msg) {
     console.log(orderCounter++, 'shouldCountNotifyUnread')
     console.log(msg)
+
     return true
   }
   /**会话
@@ -546,15 +484,18 @@ export default class IMController {
     })
   }
   onOfflineMsgs(msg) {
+    console.log(orderCounter++, ' onOfflineMsgs')
+    console.log(msg)
     store.dispatch({
       type: 'RawMessageList_Add_OfflineMessage',
       payload: msg
     })
   }
   // 系统通知
-  onOfflineSysMsgs() {
+  onOfflineSysMsgs(msg) {
     console.log(orderCounter++, ' onOfflineSysMsgs')
-    console.log()
+    console.log(msg)
+    msg.map(item => dealMsg(item, store, app))
   }
   onUpdateSysMsg(sysMsg) {
     console.log(orderCounter++, ' onUpdateSysMsg')
