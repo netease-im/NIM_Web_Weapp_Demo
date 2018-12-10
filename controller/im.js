@@ -25,7 +25,7 @@ export default class IMController {
       ondisconnect: this.onDisconnect,
       onerror: this.onError,
       // 私有化配置文件
-      privateConf: app.globalData.openPrivateConf ? app.globalData.openPrivateConf : '',
+      privateConf: app.globalData.ENVIRONMENT_CONFIG.openPrivateConf ? app.globalData.ENVIRONMENT_CONFIG.privateConf : '',
       // 同步完成
       onsyncdone: this.onSyncDone,
       // 用户关系
