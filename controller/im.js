@@ -138,14 +138,16 @@ export default class IMController {
       type: 'FriendCard_Update_Initial',
       payload: friends
     })
-    app.globalData.nim.subscribeEvent({
-      type: 1, // 订阅用户登录状态事件
-      accounts: friends.map(item => item.account),
-      sync: true,
-      done: function (err, obj) {
-        console.log(err, obj)
-      }
-    })
+    if (app.globalData.ENVIRONMENT_CONFIG.openSubscription) {
+      app.globalData.nim.subscribeEvent({
+        type: 1, // 订阅用户登录状态事件
+        accounts: friends.map(item => item.account),
+        sync: true,
+        done: function (err, obj) {
+          console.log(err, obj)
+        }
+      })
+    }
   }
   /** 6
    * 个人名片：存储个人信息到全局数据
