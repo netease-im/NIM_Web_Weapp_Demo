@@ -85,6 +85,10 @@ let pageConfig = {
     self.reCalcAllMessageTime()
     // 滚动到底部
     self.scrollToBottom()
+    app.globalData.emitter.on('callRejected', (data) => {
+      console.log('对方拒绝了111')
+      console.log(data)
+    })
   },
   /**
    * 生命周期函数--监听页面展示
@@ -865,6 +869,10 @@ let pageConfig = {
    * 视频通话
    */
   videoCall() {
+    if (app.globalData.waitingUseVideoCall) {
+      showToast('text', '请勿频繁操作', {duration: 2000})
+      return
+    }
     if (this.data.chatType === 'advanced' || this.data.chatType === 'normal') { // 群组
       if (this.data.currentGroup.memberNum.length < 2) {
         showToast('text', '无法发起，人数少于2人')
@@ -994,7 +1002,7 @@ let pageConfig = {
    */
   lookAllMessage() {
     wx.navigateTo({
-      url: `../historyFromCloud/historyFromCloud?account=${this.data.chatTo}&chatType=${this.data.chatType}`,
+      url: `../histroyfromcloud/histroyfromcloud?account=${this.data.chatTo}&chatType=${this.data.chatType}`,
     })
   },
   /**

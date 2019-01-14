@@ -1,7 +1,7 @@
 import MD5 from '../vendors/md5.js'
-import NIM from '../vendors/NIM_Web_NIM_weixin_v5.8.0.js'
+import NIM from '../vendors/NIM_Web_NIM_weixin_v6.0.0.js'
 import NetcallController from './netcall.js'
-import { updateMultiPortStatus, deepClone, dealMsg } from '../utils/util.js'
+import { updateMultiPortStatus, deepClone, dealMsg, showToast } from '../utils/util.js'
 
 let app = getApp()
 let store = app.store
@@ -188,10 +188,14 @@ export default class IMController {
     store.dispatch({
       type: 'Login_LoginSuccess'
     })
-    wx.switchTab({
-      url: '/pages/recentchat/recentchat',
-    })
-  }
+    let pages = getCurrentPages()
+    let currentPage = pages[pages.length - 1]
+    if (currentPage.route.includes('login') || currentPage.route.includes('register')) {
+      wx.switchTab({
+        url: '/pages/recentchat/recentchat',
+      })
+    }
+  } 
   /**
  * 会话更新：收到消息、发送消息、设置当前会话、重置会话未读数 触发
  * {id:'p2p-zys2',lastMsg:{},scene,to,unread,updateTime}
@@ -558,6 +562,7 @@ export default class IMController {
    */
   onWillReconnect() {
     console.log(' onWillReconnect')
+    showToast('text', '重连中，请稍后！', { duration: 3000 })
   }
 }
 

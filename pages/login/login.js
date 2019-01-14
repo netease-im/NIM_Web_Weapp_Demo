@@ -7,11 +7,18 @@ let pageConfig = {
     account: '',// 用户输入账号
     password: ''//用户输入密码
   },
+  // 测试使用
   onLoad() {
     this.resetStore()
   },
   onShow() {
     this.resetStore()
+  },
+  onShareAppMessage() {
+    return {
+      title: '网易云信DEMO',
+      path: '/pages/login/login'
+    }
   },
   /**
    * 重置store数据

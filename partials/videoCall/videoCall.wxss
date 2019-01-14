@@ -59,11 +59,13 @@
   height: 100%;
   padding-bottom: 100rpx;
   box-sizing: border-box;
+  position: relative;
+  background-color: #000;
 }
 .control-wrapper {
   width: 100%;
   box-sizing: border-box;
-  position: fixed;
+  position: absolute;
   bottom: 0;
 }
 .calling-voerview {

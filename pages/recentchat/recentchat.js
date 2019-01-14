@@ -1,5 +1,5 @@
 import { connect } from '../../redux/index.js'
-import { showToast, calcTimeHeader } from '../../utils/util.js'
+import { showToast, calcTimeHeader, clickLogoJumpToCard } from '../../utils/util.js'
 import { iconNoMessage } from '../../utils/imageBase64.js'
 let app = getApp()
 let store = app.store
@@ -193,36 +193,14 @@ let pageConfig = {
    */
   switchToPersonCard(e) {
     let account = e.currentTarget.dataset.account
+    if (account === 'ai-assistant') {
+      return
+    }
     // 重置该人的未读数
     // 重置某个会话的未读数,如果是已经存在的会话记录, 会将此会话未读数置为 0, 并会收到onupdatesession回调,而且此会话在收到消息之后依然会更新未读数
     app.globalData.nim.resetSessionUnread(`p2p-${account}`)
     // 压栈进入account介绍页
-    this.clickLogoJumpToCard(account)
-  },
-  /**
-   * 传入account判断是否是好友，跳转指定页面
-   */
-  clickLogoJumpToCard(account) {
-    let friendsAccountArr = Object.keys(this.data.friendCard)
-
-    if (friendsAccountArr.indexOf(account) !== -1) {
-      wx.navigateTo({
-        url: '/partials/personcard/personcard?account=' + account,
-      })
-    } else {
-      app.globalData.nim.getUser({
-        account: account,
-        done: function (err, user) {
-          if (err) {
-            console.log(err)
-            return
-          }
-          wx.navigateTo({
-            url: '/partials/strangercard/strangercard?account=' + user.account,
-          })
-        }
-      })
-    }
+    clickLogoJumpToCard(this.data.friendCard, account, true)
   },
   /**
    * 判断消息类型，返回提示

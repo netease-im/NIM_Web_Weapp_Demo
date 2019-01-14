@@ -1,12 +1,11 @@
-import NetcallWeixin from '../vendors/NIM_Web_Netcall_weixin_v5.8.0.js'
-import NIM from '../vendors/NIM_Web_NIM_weixin_v5.8.0.js'
+import NetcallWeixin from '../vendors/NIM_Web_Netcall_weixin_v6.0.0.js'
+import NIM from '../vendors/NIM_Web_NIM_weixin_v6.0.0.js'
 import Emitter from '../utils/emitter.js'
 
 let app = getApp()
 let store = app.store
 export default class NetcallController {
   constructor(props) {
-    console.log(NetcallWeixin)
     NIM.use(NetcallWeixin)
     NetcallWeixin.destroy()
     this.netcall = app.globalData.netcall = NetcallWeixin.getInstance(props)
@@ -48,17 +47,22 @@ export default class NetcallController {
       let pages = getCurrentPages()
       let currentPage = pages[pages.length - 1]
       if (currentPage.route.includes('videoCall') === false) { // 不在多人通话中，才提示
-      // if (!this.state.onTheCall) { // 不在通话中，则弹出通话页面
-        console.error('压栈了')
-        console.error(getCurrentPages())
+        if (!currentPage) {
+          wx.navigateTo({
+            url: `/partials/videoCall/videoCall?beCalling=true&caller=${data.caller}&cid=${data.cid}&type=${data.type}`,
+          })
+          app.globalData.isPushBeCallPage = true
+          return
+        }
         let netcallGroupCallInfo = store.getState().netcallGroupCallInfo
         let pages = getCurrentPages()
         let currentPage = pages[pages.length - 1]
         if (Object.keys(netcallGroupCallInfo).length === 0) { // p2p视频
-          if (!currentPage.route.includes('videoCall')) {
+          if (!currentPage.route.includes('videoCall') && app.globalData.isPushBeCallPage == false) {
             wx.navigateTo({
               url: `/partials/videoCall/videoCall?beCalling=true&caller=${data.caller}&cid=${data.cid}&type=${data.type}`,
             })
+            app.globalData.isPushBeCallPage = true
           }
         }
       }
@@ -105,6 +109,10 @@ export default class NetcallController {
     })
     this.netcall.on('open', (data) => {
       console.log('socket建立成功', data)
+    })
+    this.netcall.on('willreconnect', (data) => {
+      // 直播通道准备重连
+      app.globalData.emitter.emit('willreconnect', data)
     })
     this.netcall.on('sendCommandOverTime', (data) => {
       console.log('发送命令超时', data)

@@ -120,6 +120,7 @@ let indexReducer = (state = INITIAL_STATE, action) => {
       }
       card.isFriend = false
       tempState.friendCard[card.account] = Object.assign({}, tempState.friendCard[card.account], card)
+      tempState.personList[card.account] = Object.assign({}, tempState.personList[card.account], card)
       return Object.assign({}, state, tempState)
     }
     // FriendCard：更新指定好友在线状态
@@ -265,7 +266,6 @@ let indexReducer = (state = INITIAL_STATE, action) => {
       msg.msgs.map((item) => {
         tempState.rawMessageList[sessionId][item.time] = Object.assign({}, item)
       })
-      console.log('rawMessageList', tempState.rawMessageList)
       return Object.assign({}, state, tempState)
     }
     // RawMessageList：替换其中的指定消息
@@ -617,6 +617,15 @@ let indexReducer = (state = INITIAL_STATE, action) => {
       let tempState = Object.assign({}, state)
       let userList = action.payload // [{account,nick,avatar}]
       tempState.netcallCallList = Object.assign([], userList)
+      return Object.assign({}, state, tempState)
+    }
+    case 'Netcall_Call_Clear_UserList_Url': {
+      let tempState = Object.assign({}, state)
+      tempState.netcallCallList.map(user => {
+        if (user.url) {
+          user.url = ''
+        }
+      })
       return Object.assign({}, state, tempState)
     }
     // 收到自定义消息，群视频呼叫标记

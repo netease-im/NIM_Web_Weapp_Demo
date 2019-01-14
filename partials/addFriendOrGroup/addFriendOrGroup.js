@@ -87,6 +87,7 @@ let pageConfig = {
             url: '../personcard/personcard?account=' + user.account,
           })
         } else {//陌生人
+          console.log(this.data.friendCard, user)
           store.dispatch({
             type: 'FriendCard_Update_NonFriendInfoCard',
             payload: user

@@ -145,6 +145,7 @@ Component({
         this.setData({
           status: 'error'
         })
+        this.triggerEvent('pullfailed');
       }
     },
     /**

@@ -13,13 +13,15 @@
     autoplay
     style="height: {{config.height}}px; position: absolute; width: 100%; top: 0; left: 0;background-color: transparent;"
     debug="{{debug}}">
+    <slot />
     <cover-view 
       wx-if="{{status !== 'ready'}}" 
       class="sud flex-center-column" 
-      style="position: absolute; width: 100%; height:100%;display:flex;justify-content:center;align-items:center;">
+      style="display:none;">
+      <!-- style="position: absolute; width: 100%; height:100%;display:flex;justify-content:center;align-items:center;"> -->
       <cover-image style="width: 182rpx;height:240rpx" src="../../images/yunxin/{{status}}.png"></cover-image>
     </cover-view>
-    <cover-view style="position: absolute;top:10px;left:10px;font-size: 28rpx; right: 10px;color:#ccc;">
+    <cover-view style="position: absolute;top:10px;left:10px;font-size: 28rpx; right: 10px;color:#ccc;" wx-if="{{coverText.length != 0}}">
       {{coverText}}
     </cover-view>
   </live-player>  

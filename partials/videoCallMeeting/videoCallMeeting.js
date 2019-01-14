@@ -12,17 +12,19 @@ Page({
     userlist: [], //正在通话列表
     callList: [], // 主叫列表，[{account,nick,avatar}]
     currentGroup: null, // 当前群组信息
+    // 音视频流重连标记
+    streamNeedReconnect: false,
+    streamStoped: false
   },
   onLoad: function (options = {}) {
     wx.setKeepScreenOn({
       keepScreenOn: true
     })
     let state = store.getState()
-    console.log(state)
     let teamName = '多人通话'
 
     if (options.beCalling) { // 被叫
-      teamName = state.groupList[state.netcallGroupCallInfo.content.teamId].name
+      teamName = state.netcallGroupCallInfo.content.teamName
       let accounts = state.netcallGroupCallInfo.content.members
       accounts = this.adjustAccountPosition(accounts)
       let self = this
@@ -89,6 +91,7 @@ Page({
           id: 3,
           members: alluserAccounts,
           teamId: currentGroup.teamId,
+          teamName: currentGroup.name,
           room: channelName,
           type: 2
         }),
@@ -130,8 +133,9 @@ Page({
               },
               userlist,
               accountToUidMap: data.accountUidMap,
+              streamNeedReconnect: true
             })
-            wx.createLivePusherContext(this).start()
+            self.livePusherContext = wx.createLivePusherContext()
           })
       })
   },
@@ -152,8 +156,10 @@ Page({
       })
       self.setData({
         onTheCall: true, // 正在通话中标记
-        userlist: updateUserlist
+        userlist: updateUserlist,
+        streamNeedReconnect: true
       })
+      self.reconnectStreamAfter()
     })
     app.globalData.emitter.on('callAccepted', (data) => {
       console.log('对方接听了')
@@ -200,6 +206,10 @@ Page({
       self.setData({
         userlist
       })
+    })
+    // 信令准备重连
+    app.globalData.emitter.on('willreconnect', () => {
+      this.stopStream()
     })
   },
   _personJoin(data) {
@@ -262,16 +272,10 @@ Page({
    */
   hangupHandler(notBack) {
     app.globalData.netcall && app.globalData.netcall.leaveChannel() // 兼容登录网关502错误离开房间
-    this._getPusherComponent() && this._getPusherComponent().stop() // 停止推流
-    // 停止拉流
-    this.data.userlist.map((user) => {
-      if (user.uid !== this.data.loginUser.uid) {
-        this._getPlayerComponent(user.uid) && this._getPlayerComponent(user.uid).stop()
-      }
-    })
-    this.setData({
-      userlist: [],
-      onTheCall: false // 通话中的标记复位
+    this._resetData()
+    this.stopStream(0)
+    store.dispatch({
+      type: 'Netcall_Call_Clear_UserList_Url'
     })
     if (notBack !== true) {
       wx.navigateBack(1)
@@ -327,6 +331,11 @@ Page({
       enableCamera,
       muted
     })
+    if (mode == 1) {
+      this.stopStream(0).then(() => {
+        this.reconnectStreamAfter(100)
+      })
+    }
     app.globalData.netcall.switchMode(mode)
       .then(() => {
         console.log('切换模式至 -> ', mode)
@@ -338,7 +347,7 @@ Page({
   /**
    * 接听通话
    */
-  acceptCallHandler(e) {
+  acceptCallHandler() {
     let self = this
     // 显示通信画面
     this.setData({
@@ -368,7 +377,7 @@ Page({
           userlist,
           accountToUidMap: data.accountUidMap,
         })
-        wx.createLivePusherContext(this).start()
+        self.livePusherContext = wx.createLivePusherContext()
       })
   },
   /**
@@ -379,5 +388,88 @@ Page({
   },
   onPusherFailed() {
     console.error('推流失败！！')
+  },
+  _resetData () {
+    this._resetStreamState()
+    this.setData({
+      beCalling: false,
+      userlist: []
+    })
+  },
+  _resetStreamState () {
+    clearTimeout(this.stopStreamTimer)
+    this.setData({
+      streamNeedReconnect: false,
+      streamStoped: false
+    })
+  },
+  stopStream (duration = 1000) {
+    if (this.stopStreamTimer) {
+      clearTimeout(this.stopStreamTimer)
+    }
+    if (this.data.streamStoped) {
+      return Promise.resolve()
+    }
+    console.log('停止推流')
+    return new Promise((resolve, reject) => {
+      this.stopStreamTimer = setTimeout(() => {
+        if (!this.livePusherContext) {
+          return
+        }
+        if (!this.livePlayerMap) {
+          this.livePlayerMap = {}
+        }
+        this.data.userlist.map(user => {
+          const uid = `${user.uid}`
+          console.log(`停止拉流 ${uid}`)
+          if (!this.livePlayerMap[uid]) {
+            this.livePlayerMap[uid] = wx.createLivePlayerContext(`yunxinplayer-${uid}`, this)
   }
+          this.livePlayerMap[uid].stop()
+        })
+        this.livePusherContext.stop({
+          complete: () => {
+            console.log('推流已停止')
+            this.setData({
+              streamStoped: true
+            })
+            resolve()
+          }
+        })
+      }, duration)
+    })
+  },
+  reconnectStream () {
+    if (this.data.streamNeedReconnect) {
+      clearTimeout(this.stopStreamTimer)
+      console.log('开始推流')
+      this.livePusherContext.start({
+        success: () => {
+          this.setData({
+            streamStoped: false
+          })
+        },
+        complete: () => {
+          if (!this.livePlayerMap) {
+            this.livePlayerMap = {}
+          }
+          this.data.userlist.map(user => {
+            const uid = `${user.uid}`
+            console.error(`重新播放 ${uid}`)
+            console.log(user)
+            if (!this.livePlayerMap[uid]) {
+              this.livePlayerMap[uid] = wx.createLivePlayerContext(`yunxinplayer-${uid}`, this)
+            }
+            this.livePlayerMap[uid].play()
+          })
+        }
+      })
+    }
+  },
+  reconnectStreamAfter (duration = 0) {
+    clearTimeout(this.reconnectStreamTimer)
+    this.reconnectStreamTimer = setTimeout(() => {
+      this.reconnectStream()
+    }, duration)
+  },
 })

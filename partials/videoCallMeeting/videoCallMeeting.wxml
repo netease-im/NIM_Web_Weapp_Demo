@@ -1,17 +1,10 @@
 <view class='fullscreen' style='background: #494C51;'>
-  <view wx:if="{{beCalling}}" class='fullscreen'>
-    <camera device-position="front" flash="off" binderror="error" style="width:100%; height:100%;">
-      <cover-view class='calling-coverview'>
-        <cover-view class='calling-control'>
-          <cover-view class='calling-image-wrpper' catchtap='rejectCallHandler'>
-            <cover-image src='/images/netcall-reject.png' class='cover-image'></cover-image> 拒绝
-          </cover-view>
-          <cover-view class='calling-image-wrpper' catchtap='acceptCallHandler'>
-            <cover-image src='/images/netcall-accept.png' class='cover-image'></cover-image> 接听
-          </cover-view>
-        </cover-view>
-      </cover-view>
-    </camera>
+  <view  wx:if="{{beCalling}}" class='becalling-wrapper'>
+    <view class='becalling-text'>对方邀请你开始视频聊天</view>
+    <view class='becalling-button-group'>
+      <view class='reject-button button' catchtap='rejectCallHandler'>拒绝</view>
+      <view class='accept-button button' catchtap='acceptCallHandler'>接听</view>
+    </view>
   </view>
   <view wx:else class='fullscreen'>
     <view class='video-wrapper'>

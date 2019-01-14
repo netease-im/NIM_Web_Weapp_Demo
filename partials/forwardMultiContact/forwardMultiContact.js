@@ -73,6 +73,23 @@ let pageConfig = {
       type: 'Netcall_Call_UserList',
       payload: this.data.chooseList
     })
+    this.data.chooseList.map(user => {
+      app.globalData.nim.sendTipMsg({
+        scene: 'team',
+        to: this.data.currentGroup.teamId,
+        tip: `${app.globalData.nim.account}发起了通话`,
+        done: function (err, msg) {
+          // 判断错误类型，并做相应处理
+          if (err) {
+            if (err.code == 7101) {
+              showToast('text', '你已被对方拉黑')
+            }
+            console.log(err)
+          }
+          console.error('已发送消息给：', user.account)
+        }
+      })
+    })
     wx.navigateTo({
       url: '../videoCallMeeting/videoCallMeeting',
     })

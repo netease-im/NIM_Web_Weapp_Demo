@@ -28,3 +28,7 @@ button[disabled]:not([type]) {
   background-color:rgb(85,188,250);
   color: #fff;
 }
+
+cover-view {
+  position: absolute;
+}

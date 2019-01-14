@@ -110,7 +110,7 @@ let pageConfig = {
 
 let mapStateToData = (state) => {
   return {
-    isRegister: state.isRegister || store.getState().isRegister
+    isRegister: state.isRegister || store.getState().isRegister || state.isLogin || store.getState().isLogin
   }
 }
 const mapDispatchToPage = (dispatch) => ({

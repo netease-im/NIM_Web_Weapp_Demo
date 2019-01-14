@@ -16,14 +16,14 @@
   <view wx:if="{{chatList.length != 0}}" wx:for="{{chatList}}" wx:for-item="message" wx:key="message.time" data-session='{{message.session}}' catchtap='catchDeleteTap'>
     <swipe-delete>
       <view wx:if="{{message.account !== '消息通知'}}" class='recentchat-item' hover-class='recentchat-item-hover' catchtap='stopEventPropagation'>
-        <image wx:if="{{message.account == userInfo.account}}" src='/images/computer.png' class='recentchat-item-img' data-account='{{message.account}}' catchtap='switchToPersonCard'></image>
+        <image wx:if="{{message.account == userInfo.account}}" src='/images/computer.png' class='recentchat-item-img' data-account='{{message.account}}' ></image>
         <image wx:if="{{message.chatType == 'p2p' && message.account != userInfo.account}}" src='{{message.avatar}}' class='recentchat-item-img' data-account='{{message.account}}' catchtap='switchToPersonCard'></image>
-        <image wx:if="{{message.chatType == 'advanced'}}" src='/images/advanced.png' class='recentchat-item-img' data-account='{{message.account}}' catchtap='switchToPersonCard'></image>
-        <image wx:if="{{message.chatType == 'normal'}}" src='/images/normal.png' class='recentchat-item-img' data-account='{{message.account}}' catchtap='switchToPersonCard'></image>
+        <image wx:if="{{message.chatType == 'advanced'}}" src='/images/advanced.png' class='recentchat-item-img' data-account='{{message.account}}'></image>
+        <image wx:if="{{message.chatType == 'normal'}}" src='/images/normal.png' class='recentchat-item-img' data-account='{{message.account}}'></image>
         <view class='recentchat-item-right' data-account='{{message.account}}'
         data-session='{{message.session}}' catchtap='switchToChating'>
           <view class='recentchat-item-top'>
-             <text wx:if="{{message.account != userInfo.account}}" class='recentchat-item-title'>{{message.nick || message.account}}</text>
+            <text wx:if="{{message.account != userInfo.account}}" class='recentchat-item-title'>{{message.nick || message.account}}</text>
             <text wx:if="{{message.account == userInfo.account}}" class='recentchat-item-title'>我的电脑</text>
             <text class='recentchat-item-time'>{{message.displayTime}}</text>
           </view>

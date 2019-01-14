@@ -76,17 +76,20 @@ Component({
     detached: function () {
       console.log("yunxin-pusher detached");
       // auto stop yunxin-pusher when detached
-      this.data.livePusherContext && this.data.livePusherContext.stop()
-      this.data.detached = true
+      // this.stop()
+      this.setData({
+        detached: true
+      })
     },
     /**
      * 在组件布局完成后执行，此时可以获取节点信息
      */
     attached: function () {
       console.log("yunxin-pusher ready")
-      if (!this.data.livePusherContext) {
-        this.data.livePusherContext = wx.createLivePusherContext(this)
-      }
+      this.start()
+      this.setData({
+        detached: false
+      })
     },
   },
   /**
@@ -97,33 +100,33 @@ Component({
      * 播放推流
      * 一般情况下不应手动调用，在推流组件预备好后会自动被调用
      */
-    start() {
-      this.data.livePusherContext.stop()
-      if (this.data.detached) {
-        console.log(`try to start yunxin-pusher while component already detached`)
-        return
+    start(options = {}) {
+      if (!this.livePusherContext) {
+        this.livePusherContext = wx.createLivePusherContext()
       }
       console.log(`starting yunxin-pusher`);
-      this.data.livePusherContext.start()
+      this.livePusherContext.start(options)
     },
     /**
      * 停止推流
      */
-    stop() {
-      console.log(`stopping yunxin-pusher`);
-      this.data.livePusherContext.stop()
+    stop(options = {}) {
+      if (this.livePusherContext) {
+        console.log(`stopping yunxin-pusher`);
+        this.livePusherContext.stop(options)
+      }
     },
     /**
      * 切换前后摄像头
      */
     switchCamera() {
-      this.data.livePusherContext.switchCamera()
+      this.livePusherContext.switchCamera()
     },
     /**
      * 快照
      */
     snapshot() {
-      this.data.livePusherContext.snapshot()
+      this.livePusherContext.snapshot()
     },
 
     /**
@@ -131,13 +134,18 @@ Component({
      */
     stateChangeHandler(e) {
       console.warn(`yunxin-pusher code: ${e.detail.code} - ${e.detail.message}`)
-      if (e.detail.code === -1307) {
+      if (e.detail.code === -1307) { // 网络断连，且经多次重连抢救无效，更多重试请自行重启推
         console.log('yunxin-pusher stopped', `code: ${e.detail.code}`);
         this.setData({
           status: "error"
         })
+        this.livePusherContext.stop({
+          complete: () => {
+            this.livePusherContext.start()
+          }
+        })
         this.triggerEvent('pushfailed');
-      } else if (e.detail.code === 1008) {
+      } else if (e.detail.code === 1008) { // 编码器启动
         console.log(`yunxin-pusher started`, `code: ${e.detail.code}`);
         if (this.data.status === "loading") {
           this.setData({

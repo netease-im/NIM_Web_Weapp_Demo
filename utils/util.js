@@ -846,42 +846,6 @@ function calculateMeetingPosition(newUserList = [], oldUserList = [], config) {
   }
   return resultUserList
 }
-/**
- * 计算p2p情况下推拉流组件位置以及宽高
- */
-function calculateP2PPosition(newUserList, oldUserList, config) {
-  config = config || {}
-  let containerSize = app.globalData.videoContainerSize // 外部容器大小
-  let totalCount = newUserList.length + oldUserList.length // 内部所有video的个数
-  let resultUserList = oldUserList.concat(newUserList) // 返回的结果集
-  switch (totalCount) {
-    case 1: {
-      resultUserList[0].config = {
-        x: 0,
-        y: 0,
-        width: containerSize.width,
-        height: containerSize.height
-      }
-      break
-    }
-    case 2: {
-      resultUserList[0].config = {
-        x: 0,
-        y: 0,
-        width: containerSize.width,
-        height: containerSize.height
-      }
-      resultUserList[1].config = {
-        x: containerSize.width - 100 - 30,
-        y: 30,
-        width: 100,
-        height: 150
-      }
-      break
-    }
-  }
-  return resultUserList
-}
 
 function dealMsg(msg, store, app) {
   let account = msg.from
@@ -951,7 +915,6 @@ function dealMsg(msg, store, app) {
 }
 module.exports = {
   calculateMeetingPosition,
-  calculateP2PPosition,
   formatDate,
   formatTime,
   formatNumber,

@@ -15,7 +15,7 @@ let pageConfig = {
    */
   onLoad: function (options) {
     let account = options.account
-    let userCard = store.getState().friendCard[account]
+    let userCard = store.getState().personList[account] || {}
     this.setData({
       user: correctData(userCard),
       isBlack: userCard.isBlack || false

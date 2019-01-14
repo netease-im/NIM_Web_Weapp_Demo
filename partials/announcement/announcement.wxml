@@ -11,5 +11,5 @@
     <input type='text' bindinput='titleChange' value='{{newTitle}}' placeholder='标题' maxlength='32' class="input"></input>
     <textarea bindinput='contentChange' value='{{newContent}}' placeholder='内容限900字' maxlength='900' class='textarea'></textarea>
   </view>
-  <button wx:if="{{limit}}" catchtap='submit' class='save-btn' disabled='{{!title || !content}}' loading='{{isSaving}}'>保存</button>
+  <button wx:if="{{limit}}" catchtap='submit' class='save-btn' disabled='{{(!newTitle || !newContent)}}' loading='{{isSaving}}'>保存</button>
 </view>
