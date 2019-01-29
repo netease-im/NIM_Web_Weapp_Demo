@@ -1002,7 +1002,7 @@ let pageConfig = {
    */
   lookAllMessage() {
     wx.navigateTo({
-      url: `../histroyfromcloud/histroyfromcloud?account=${this.data.chatTo}&chatType=${this.data.chatType}`,
+      url: `../historyFromCloud/historyFromCloud?account=${this.data.chatTo}&chatType=${this.data.chatType}`,
     })
   },
   /**
