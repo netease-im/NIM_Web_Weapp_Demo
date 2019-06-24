@@ -8,18 +8,19 @@
   </view>
   <view wx:else class='fullscreen'>
     <view class='video-wrapper'>
-      <block wx:for="{{userlist}}" wx:for-item="user" wx:key="*this">
-        <yunxin-pusher
-          wx:if="{{user.uid === loginUser.uid}}"
-          id="yunxin-pusher"
-          url="{{user.url}}"
-          enable-camera="{{enableCamera}}"
-          muted="{{muted}}"
-          beauty="true"
-          config="{{user.config}}"
-          coverText="{{user.nick || user.account}}"
-          bindpushfailed="onPusherFailed"
-        ></yunxin-pusher>
+      <block wx:for="{{userlist}}" wx:for-item="user" wx:key="{{user.uid}}">
+      <yunxin-pusher
+        wx:if="{{user.uid === loginUser.uid}}"
+        wx:key="{{use.uid}}"
+        id="yunxin-pusher"
+        url="{{user.url}}"
+        enable-camera="{{enableCamera}}"
+        muted="{{muted}}"
+        beauty="true"
+        config="{{user.config}}"
+        coverText="{{user.nick || user.account}}"
+        bindpushfailed="onPusherFailed"
+      ></yunxin-pusher>
         <yunxin-player
           wx:if="{{user.uid !== loginUser.uid}}"
           wx:key="{{user.uid}}"

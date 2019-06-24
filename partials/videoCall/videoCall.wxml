@@ -19,6 +19,7 @@
         <block wx:for="{{userlist}}" wx:for-item="user" wx:for-index="index" wx:key="{{user.uid}}">
           <yunxin-pusher
             wx:if="{{user.uid === loginUser.uid}}"
+            wx:key="{{user.uid}}"
             id="yunxin-pusher"
             url="{{user.url}}"
             enable-camera="{{enableCamera}}"
