@@ -2,6 +2,9 @@
 let envir = 'online'
 let ENVIRONMENT_CONFIG = {}
 
+console.warn('|||||||||||||||||||||||||||||||||||||')
+console.warn('若修改appkey为自己的appkey后，且自己的appey暂未开通订阅权限，需要注释掉im.js文件中”onpushevents: this.onPushEvents“这一行以及onFriends回调中subscribeEvent方法。')
+console.warn('|||||||||||||||||||||||||||||||||||||')
 // 若修改appkey为自己的appkey后，且自己的appey暂未开通订阅权限，
 // 需要注释掉im.js文件中”onpushevents: this.onPushEvents“这一行以及onFriends回调中subscribeEvent方法。
 let configMap = {

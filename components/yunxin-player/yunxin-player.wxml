@@ -6,8 +6,8 @@
     mode="RTC" 
     class="player" 
     orientation="{{orientation}}" 
-    min-cache="0.1" 
-    max-cache="0.3" 
+    min-cache="0.2" 
+    max-cache="0.8" 
     bindstatechange="stateChangeHandler" 
     object-fit="{{objectFit}}" 
     autoplay
