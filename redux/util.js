@@ -52,8 +52,20 @@ function shallowEqual(objA, objB) {
   if (objA === objB) {
     return true
   }
-  const keysA = Object.keys(objA)
-  const keysB = Object.keys(objB)
+  function removeBugKeyArr(originArr) {
+    // 实际机器，不会有 __webviewId__ 这个参数，调试机器会有，会造成某种特殊情况下面的报错。
+    // 例如，reducer 中直接更改 redux 的某个对象值里面某个属性，page 那边会直接是对象引用，没 shallowEqual 的 hasOwn 检测还是一样，永远返回 true 。
+    const removeBugKeyArrList = ['__webviewId__'];
+    const arr = [];
+    originArr.map(elem => {
+      if (!removeArrList.includes(elem) && !arr.includes(elem)) {
+        arr.push(elem);
+      }
+    });
+    return arr;
+  }
+  const keysA = removeBugKeyArr(Object.keys(objA));
+  const keysB = removeBugKeyArr(Object.keys(objB));
   if (keysA.length !== keysB.length) {
     return false
   }
