@@ -46,7 +46,7 @@ export default class NetcallController {
       console.log('beCalling', data)
       let pages = getCurrentPages()
       let currentPage = pages[pages.length - 1]
-      if (currentPage.route.includes('videoCall') === false) { // 不在多人通话中，才提示
+      if (currentPage.route.includes('videoCall') === false && app.globalData.isPushBeCallPage == false) { // 不在多人通话中，才提示
         if (!currentPage) {
           wx.navigateTo({
             url: `/partials/videoCall/videoCall?beCalling=true&caller=${data.caller}&cid=${data.cid}&type=${data.type}`,
