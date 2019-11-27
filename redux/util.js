@@ -58,7 +58,7 @@ function shallowEqual(objA, objB) {
     const removeBugKeyArrList = ['__webviewId__'];
     const arr = [];
     originArr.map(elem => {
-      if (!removeArrList.includes(elem) && !arr.includes(elem)) {
+      if (!removeBugKeyArrList.includes(elem) && !arr.includes(elem)) {
         arr.push(elem);
       }
     });
