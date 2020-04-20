@@ -9,3 +9,6 @@
   background-color: #1B2A38;
   opacity:0.65; 
 }
+.camera {
+  z-index: 1000;
+}
