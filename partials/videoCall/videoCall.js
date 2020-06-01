@@ -57,7 +57,16 @@ Page({
       app.globalData.netcall.call({
         type: 2, // 通话类型：1音频，2视频
         callee: options.callee, // 被叫
-        forceKeepCalling: true, // 持续呼叫
+        forceKeepCalling: false, // 持续呼叫
+      })
+      .then(obj => {
+        console.log(obj, 'call-success')
+      }, error => {
+        if (error.event.code === 11001) {
+          console.log(error, 'call-error 11001')
+        } else {
+          console.log(error, 'call-error')
+        }
       })
       .catch((error) => {
         const duration = 2000
