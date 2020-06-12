@@ -1,5 +1,5 @@
 import MD5 from '../vendors/md5.js'
-import NIM from '../vendors/NIM_Web_NIM_weixin_v6.8.0.js'
+import NIM from '../vendors/NIM_Web_NIM_weixin_v7.7.0.js'
 import NetcallController from './netcall.js'
 import { updateMultiPortStatus, deepClone, dealMsg, showToast } from '../utils/util.js'
 

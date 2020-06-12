@@ -1,5 +1,5 @@
-import NetcallWeixin from '../vendors/NIM_Web_Netcall_weixin_v6.8.0.js'
-import NIM from '../vendors/NIM_Web_NIM_weixin_v6.8.0.js'
+import NetcallWeixin from '../vendors/NIM_Web_Netcall_weixin_v7.7.0.js'
+import NIM from '../vendors/NIM_Web_NIM_weixin_v7.7.0.js'
 import Emitter from '../utils/emitter.js'
 
 let app = getApp()

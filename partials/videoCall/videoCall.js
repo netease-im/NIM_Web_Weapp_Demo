@@ -279,6 +279,13 @@ Page({
   },
   _personJoin(data) {
     let userlist = Object.assign([], this.data.userlist)
+    if (userlist.length == 0) {
+      userlist.push(data)
+      this.setData({
+        userlist: userlist
+      })
+      return
+    }
     let uids = userlist.map(user => user.uid) || []
     if (uids.includes(data.uid) === false) {
       // 非自己
