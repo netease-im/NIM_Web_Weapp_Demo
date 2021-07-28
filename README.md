@@ -151,3 +151,7 @@
 ## 写在最后
 
 初步统计本项目大概8500行代码（去除IM SDK以及MD5加密库），换句话说不到9000行代码，你就能在微信中实现一个mini 微信，这一切均借助于云信IM SDK强大的即时通讯能力。当然本期版本还存在很多不足的地方，希望在做第二期群聊功能的时候，能继续升级整体的组织架构。
+
+**推荐客户得京东卡，首次推荐成单得3000元京东卡，连续推荐4500元/单，上不封顶。点击参与https://yunxin.163.com/promotion/recommend**
+
+![main](https://github.com/netease-kit/NIM_iOS_UIKit/blob/master/activity-1.png)
